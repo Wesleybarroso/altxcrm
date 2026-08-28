@@ -30,3 +30,17 @@
 - [x] Revalidar todas as rotas no navegador sem erros de runtime e revisar acessibilidade básica
 
 - [x] Refinar os ícones do navbar com uma linguagem mais profissional, consistente e sofisticada
+
+## Integração Cloudflare
+
+- [x] Adicionar armazenamento server-side criptografado para a chave API do Cloudflare
+- [ ] Criar camada segura Cloudflare para descobrir zonas, listar domínios e consultar registros DNS
+- [ ] Criar pré-visualização de registros MX, SPF, DKIM, DMARC e verificação antes da aplicação
+- [ ] Implementar aplicação idempotente dos registros DNS selecionados para o domínio escolhido
+- [ ] Adicionar interface para configurar Cloudflare e escolher domínio/zona no painel
+- [ ] Documentar que Cloudflare automatiza DNS, mas não substitui a API de provisionamento da VPS de e-mail
+- [ ] Adicionar testes para autenticação, permissões, validação HTTPS e aplicação idempotente de DNS
+
+- [x] Adicionar uma única opção de chave API Cloudflare dentro de Integrações, sem suporte a credencial alternativa
+
+- [x] Simplificar Integrações para exibir apenas um campo seguro de chave API do Cloudflare dentro do site

@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, activityLogs, domains, emailMessages, mailboxes, users, webhooks, workspaceSettings } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { decryptWorkspaceSecret, encryptWorkspaceSecret } from "./security/secrets";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -45,7 +46,19 @@ export async function getWorkspaceSnapshot(ownerId: number) {
     db.select().from(activityLogs).where(eq(activityLogs.ownerId, ownerId)).orderBy(desc(activityLogs.createdAt)).limit(30),
     db.select().from(workspaceSettings).where(eq(workspaceSettings.ownerId, ownerId)).limit(1),
   ]);
-  return { domains: domainRows, mailboxes: mailboxRows, messages: messageRows, activities: activityRows, settings: settingsRows[0] ?? null };
+  const rawSettings = settingsRows[0];
+  const settings = rawSettings ? {
+    id: rawSettings.id,
+    ownerId: rawSettings.ownerId,
+    storageLimitGb: rawSettings.storageLimitGb,
+    providerLabel: rawSettings.providerLabel,
+    integrationEndpoint: rawSettings.integrationEndpoint,
+    mfaRequired: rawSettings.mfaRequired,
+    securityAlerts: rawSettings.securityAlerts,
+    auditLogEnabled: rawSettings.auditLogEnabled,
+    updatedAt: rawSettings.updatedAt,
+  } : null;
+  return { domains: domainRows, mailboxes: mailboxRows, messages: messageRows, activities: activityRows, settings };
 }
 
 export async function createDomain(ownerId: number, domain: string) {
@@ -142,6 +155,38 @@ export async function saveWorkspaceSettings(ownerId: number, input: { storageLim
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   await db.insert(workspaceSettings).values({ ownerId, storageLimitGb: input.storageLimitGb ?? 200, providerLabel: input.providerLabel ?? "VPS Altx · Produção", integrationEndpoint: input.integrationEndpoint ?? "api.altx.io/v1/mail", mfaRequired: input.mfaRequired ?? 1, securityAlerts: input.securityAlerts ?? 1, auditLogEnabled: input.auditLogEnabled ?? 1 }).onDuplicateKeyUpdate({ set: input });
+}
+
+export async function saveCloudflareApiKey(ownerId: number, apiKey: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const encrypted = encryptWorkspaceSecret(apiKey);
+  await db.insert(workspaceSettings).values({ ownerId, cloudflareApiKeyEncrypted: encrypted }).onDuplicateKeyUpdate({ set: { cloudflareApiKeyEncrypted: encrypted } });
+  await logActivity(ownerId, "Chave API do Cloudflare atualizada", "integration", undefined, "Credencial armazenada criptografada no workspace");
+  return { success: true } as const;
+}
+
+export async function getCloudflareApiKey(ownerId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const rows = await db.select({ encrypted: workspaceSettings.cloudflareApiKeyEncrypted }).from(workspaceSettings).where(eq(workspaceSettings.ownerId, ownerId)).limit(1);
+  const encrypted = rows[0]?.encrypted;
+  return encrypted ? decryptWorkspaceSecret(encrypted) : null;
+}
+
+export async function hasCloudflareApiKey(ownerId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db.select({ encrypted: workspaceSettings.cloudflareApiKeyEncrypted }).from(workspaceSettings).where(eq(workspaceSettings.ownerId, ownerId)).limit(1);
+  return Boolean(rows[0]?.encrypted);
+}
+
+export async function clearCloudflareApiKey(ownerId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(workspaceSettings).set({ cloudflareApiKeyEncrypted: null }).where(eq(workspaceSettings.ownerId, ownerId));
+  await logActivity(ownerId, "Chave API do Cloudflare removida", "integration", undefined, "Credencial removida do workspace");
+  return { success: true } as const;
 }
 
 export async function logActivity(ownerId: number, action: string, resourceType: string, resourceId?: number, detail?: string) {

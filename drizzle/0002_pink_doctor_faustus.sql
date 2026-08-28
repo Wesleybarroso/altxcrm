@@ -1,0 +1,1 @@
+ALTER TABLE `workspaceSettings` ADD `cloudflareApiKeyEncrypted` text;

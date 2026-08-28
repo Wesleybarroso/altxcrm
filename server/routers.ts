@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { createDomain, createEmailMessage, createMailbox, createWebhook, deleteDomain, deleteMailbox, deleteWebhook, getWebhooks, getWorkspaceSnapshot, logActivity, saveWorkspaceSettings, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook } from "./db";
+import { clearCloudflareApiKey, createDomain, createEmailMessage, createMailbox, createWebhook, deleteDomain, deleteMailbox, deleteWebhook, getWebhooks, getWorkspaceSnapshot, hasCloudflareApiKey, logActivity, saveCloudflareApiKey, saveWorkspaceSettings, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook } from "./db";
 import { checkMailVpsConnection, mailVpsIntegration } from "./integrations/mailVps";
 
 const domainIdInput = z.object({ id: z.number().int().positive() });
@@ -50,6 +50,11 @@ export const appRouter = router({
     list: protectedProcedure.query(async ({ ctx }) => (await getWorkspaceSnapshot(ctx.user.id)).messages.filter((message) => message.scheduledAt)),
     create: protectedProcedure.input(z.object({ mailboxId: z.number().int().positive(), senderEmail: z.string().email(), senderName: z.string().max(160).optional(), toEmails: z.array(z.string().email()).min(1), subject: z.string().min(1).max(500), body: z.string().min(1), scheduledAt: z.coerce.date() })).mutation(async ({ ctx, input }) => { await mailVpsIntegration.sendMessage({ from: input.senderEmail, to: input.toEmails, subject: input.subject, body: input.body, scheduledAt: input.scheduledAt.getTime() }); const id = await createEmailMessage(ctx.user.id, { ...input, folder: "draft" }); return { id, success: true } as const; }),
     cancel: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => { await updateMessageStatus(ctx.user.id, input.id, { folder: "draft", scheduledAt: null }); return { success: true } as const; }),
+  }),
+  integrations: router({
+    cloudflareStatus: protectedProcedure.query(({ ctx }) => hasCloudflareApiKey(ctx.user.id).then((configured) => ({ configured }))),
+    saveCloudflareApiKey: protectedProcedure.input(z.object({ apiKey: z.string().trim().min(10).max(500) })).mutation(({ ctx, input }) => saveCloudflareApiKey(ctx.user.id, input.apiKey)),
+    removeCloudflareApiKey: protectedProcedure.mutation(({ ctx }) => clearCloudflareApiKey(ctx.user.id)),
   }),
   webhooks: router({
     list: protectedProcedure.query(({ ctx }) => getWebhooks(ctx.user.id)),

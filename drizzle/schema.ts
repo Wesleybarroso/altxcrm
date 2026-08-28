@@ -89,6 +89,7 @@ export const workspaceSettings = mysqlTable("workspaceSettings", {
   mfaRequired: tinyint("mfaRequired").default(1).notNull(),
   securityAlerts: tinyint("securityAlerts").default(1).notNull(),
   auditLogEnabled: tinyint("auditLogEnabled").default(1).notNull(),
+  cloudflareApiKeyEncrypted: text("cloudflareApiKeyEncrypted"),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
