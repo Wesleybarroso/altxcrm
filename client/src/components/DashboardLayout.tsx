@@ -24,18 +24,19 @@ import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import {
   Archive,
-  AtSign,
-  CalendarClock,
+  Clock3,
   ChevronDown,
   CircleHelp,
   Globe2,
   Inbox,
   LayoutDashboard,
   LogOut,
+  Mail,
   MailPlus,
   PanelLeft,
-  PlugZap,
   Settings2,
+  SlidersHorizontal,
+  Webhook,
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
@@ -50,22 +51,22 @@ const menuSections = [
     items: [
       { icon: LayoutDashboard, label: "Visão geral", path: "/" },
       { icon: Globe2, label: "Domínios", path: "/domains" },
-      { icon: AtSign, label: "Caixas postais", path: "/mailboxes" },
+      { icon: Mail, label: "Caixas postais", path: "/mailboxes" },
     ],
   },
   {
     label: "Mensageria",
     items: [
       { icon: Inbox, label: "Caixa de entrada", path: "/inbox" },
-      { icon: CalendarClock, label: "Agendados", path: "/scheduled" },
+      { icon: Clock3, label: "Agendados", path: "/scheduled" },
       { icon: Archive, label: "Arquivo", path: "/archive" },
     ],
   },
   {
     label: "Sistema",
     items: [
-      { icon: PlugZap, label: "Integrações", path: "/integrations" },
-      { icon: Settings2, label: "Configurações", path: "/settings" },
+      { icon: Webhook, label: "Integrações", path: "/integrations" },
+      { icon: SlidersHorizontal, label: "Configurações", path: "/settings" },
     ],
   },
 ];
@@ -168,7 +169,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
                     return (
                       <SidebarMenuItem key={item.path}>
                         <SidebarMenuButton isActive={isActive} onClick={() => setLocation(item.path)} tooltip={item.label} className={`h-10 rounded-lg text-sm transition-all ${isActive ? "bg-[#183b38] text-[#c8ff4f] shadow-[inset_3px_0_0_#c8ff4f]" : "text-[#89a79a] hover:bg-[#112a2a] hover:text-[#eaf5e8]"}`}>
-                          <item.icon className={`h-4 w-4 ${isActive ? "text-[#c8ff4f]" : ""}`} /><span>{item.label}</span>
+                          <item.icon aria-hidden="true" strokeWidth={1.65} className={`h-[17px] w-[17px] shrink-0 ${isActive ? "text-[#c8ff4f]" : ""}`} /><span>{item.label}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );

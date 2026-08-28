@@ -28,3 +28,5 @@
 - [x] Adicionar estados reais de loading, erro e vazio nos fluxos assíncronos
 - [x] Ampliar testes Vitest para domínios, caixas postais, mensagens, agendamento e webhooks com persistência isolada
 - [x] Revalidar todas as rotas no navegador sem erros de runtime e revisar acessibilidade básica
+
+- [x] Refinar os ícones do navbar com uma linguagem mais profissional, consistente e sofisticada
