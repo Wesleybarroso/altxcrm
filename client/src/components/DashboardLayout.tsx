@@ -33,6 +33,7 @@ import {
   LogOut,
   Mail,
   MailPlus,
+  MessageCircle,
   PanelLeft,
   Settings2,
   SlidersHorizontal,
@@ -58,6 +59,7 @@ const menuSections = [
     label: "Mensageria",
     items: [
       { icon: Inbox, label: "Caixa de entrada", path: "/inbox" },
+      { icon: MessageCircle, label: "WhatsApp", path: "/whatsapp" },
       { icon: Clock3, label: "Agendados", path: "/scheduled" },
       { icon: Archive, label: "Arquivo", path: "/archive" },
     ],

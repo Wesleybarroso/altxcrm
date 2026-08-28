@@ -12,6 +12,7 @@ import Scheduled from "./pages/Scheduled";
 import Archive from "./pages/Archive";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
+import WhatsApp from "./pages/WhatsApp";
 import NotFound from "./pages/NotFound";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/archive"><ProtectedRoute><Archive /></ProtectedRoute></Route>
       <Route path="/integrations"><ProtectedRoute><Integrations /></ProtectedRoute></Route>
       <Route path="/settings"><ProtectedRoute><Settings /></ProtectedRoute></Route>
+      <Route path="/whatsapp"><ProtectedRoute><WhatsApp /></ProtectedRoute></Route>
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

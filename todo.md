@@ -44,3 +44,19 @@
 - [x] Adicionar uma única opção de chave API Cloudflare dentro de Integrações, sem suporte a credencial alternativa
 
 - [x] Simplificar Integrações para exibir apenas um campo seguro de chave API do Cloudflare dentro do site
+
+## Integração n8n
+
+- [ ] Adicionar integração n8n com endpoint webhook HTTPS na área de Integrações
+- [ ] Permitir selecionar eventos e criar um webhook n8n com segredo gerado no backend
+- [ ] Adicionar teste de conexão e instruções para configurar o Webhook node no n8n
+- [ ] Validar o fluxo n8n com testes, build e revisão visual
+
+## Integração WhatsApp / OpenWA
+
+- [x] Adicionar configuração segura de URL e API key do OpenWA no AltxCRM
+- [x] Criar tela de sessões WhatsApp com adicionar, iniciar, status e QR Code
+- [x] Adicionar envio de mensagem de teste e indicação de sessão pronta
+- [x] Documentar a futura ligação de eventos OpenWA com o sistema de webhooks/n8n; receptor inbound funcional permanece como próxima etapa
+- [x] Documentar requisitos de VPS persistente, volume de sessão, TLS e risco de uso de API não oficial
+- [x] Criar testes server-side sem rede real e validar build/experiência da nova área

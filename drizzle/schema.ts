@@ -70,6 +70,19 @@ export const webhooks = mysqlTable("webhooks", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const whatsappSessions = mysqlTable("whatsappSessions", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull().references(() => users.id),
+  openwaSessionId: varchar("openwaSessionId", { length: 120 }).notNull().unique(),
+  name: varchar("name", { length: 80 }).notNull(),
+  status: varchar("status", { length: 40 }).default("created").notNull(),
+  phone: varchar("phone", { length: 40 }),
+  pushName: varchar("pushName", { length: 160 }),
+  lastSyncedAt: timestamp("lastSyncedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const activityLogs = mysqlTable("activityLogs", {
   id: int("id").autoincrement().primaryKey(),
   ownerId: int("ownerId").notNull().references(() => users.id),
@@ -90,6 +103,8 @@ export const workspaceSettings = mysqlTable("workspaceSettings", {
   securityAlerts: tinyint("securityAlerts").default(1).notNull(),
   auditLogEnabled: tinyint("auditLogEnabled").default(1).notNull(),
   cloudflareApiKeyEncrypted: text("cloudflareApiKeyEncrypted"),
+  openwaBaseUrl: varchar("openwaBaseUrl", { length: 1024 }),
+  openwaApiKeyEncrypted: text("openwaApiKeyEncrypted"),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
@@ -101,3 +116,4 @@ export type EmailMessage = typeof emailMessages.$inferSelect;
 export type Webhook = typeof webhooks.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type WorkspaceSettings = typeof workspaceSettings.$inferSelect;
+export type WhatsappSession = typeof whatsappSessions.$inferSelect;

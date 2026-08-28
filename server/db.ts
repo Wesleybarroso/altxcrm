@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, activityLogs, domains, emailMessages, mailboxes, users, webhooks, workspaceSettings } from "../drizzle/schema";
+import { InsertUser, activityLogs, domains, emailMessages, mailboxes, users, webhooks, whatsappSessions, workspaceSettings } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { decryptWorkspaceSecret, encryptWorkspaceSecret } from "./security/secrets";
 
@@ -187,6 +187,53 @@ export async function clearCloudflareApiKey(ownerId: number) {
   await db.update(workspaceSettings).set({ cloudflareApiKeyEncrypted: null }).where(eq(workspaceSettings.ownerId, ownerId));
   await logActivity(ownerId, "Chave API do Cloudflare removida", "integration", undefined, "Credencial removida do workspace");
   return { success: true } as const;
+}
+
+export async function saveOpenwaConfig(ownerId: number, input: { baseUrl: string; apiKey: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const baseUrl = input.baseUrl.trim().replace(/\/$/, "");
+  if (!/^https:\/\//i.test(baseUrl) && !/^http:\/\/localhost(?::\d+)?$/i.test(baseUrl)) throw new Error("OpenWA URL must use HTTPS");
+  const encrypted = encryptWorkspaceSecret(input.apiKey);
+  await db.insert(workspaceSettings).values({ ownerId, openwaBaseUrl: baseUrl, openwaApiKeyEncrypted: encrypted }).onDuplicateKeyUpdate({ set: { openwaBaseUrl: baseUrl, openwaApiKeyEncrypted: encrypted } });
+  await logActivity(ownerId, "Gateway OpenWA configurado", "whatsapp", undefined, "URL e API key armazenadas com segurança");
+  return { success: true } as const;
+}
+
+export async function getOpenwaConfig(ownerId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const rows = await db.select({ baseUrl: workspaceSettings.openwaBaseUrl, encrypted: workspaceSettings.openwaApiKeyEncrypted }).from(workspaceSettings).where(eq(workspaceSettings.ownerId, ownerId)).limit(1);
+  const row = rows[0];
+  if (!row?.baseUrl || !row.encrypted) return null;
+  return { baseUrl: row.baseUrl, apiKey: decryptWorkspaceSecret(row.encrypted) };
+}
+
+export async function hasOpenwaConfig(ownerId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db.select({ baseUrl: workspaceSettings.openwaBaseUrl, encrypted: workspaceSettings.openwaApiKeyEncrypted }).from(workspaceSettings).where(eq(workspaceSettings.ownerId, ownerId)).limit(1);
+  return Boolean(rows[0]?.baseUrl && rows[0]?.encrypted);
+}
+
+export async function getWhatsappSessions(ownerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(whatsappSessions).where(eq(whatsappSessions.ownerId, ownerId)).orderBy(desc(whatsappSessions.createdAt));
+}
+
+export async function createWhatsappSession(ownerId: number, input: { openwaSessionId: string; name: string; status?: string; phone?: string | null; pushName?: string | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const result = await db.insert(whatsappSessions).values({ ownerId, openwaSessionId: input.openwaSessionId, name: input.name, status: input.status ?? "created", phone: input.phone ?? null, pushName: input.pushName ?? null, lastSyncedAt: new Date() });
+  await logActivity(ownerId, "Sessão WhatsApp criada", "whatsapp", Number(result[0].insertId), input.name);
+  return Number(result[0].insertId);
+}
+
+export async function updateWhatsappSession(ownerId: number, openwaSessionId: string, input: { status?: string; phone?: string | null; pushName?: string | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(whatsappSessions).set({ ...input, lastSyncedAt: new Date() }).where(and(eq(whatsappSessions.ownerId, ownerId), eq(whatsappSessions.openwaSessionId, openwaSessionId)));
 }
 
 export async function logActivity(ownerId: number, action: string, resourceType: string, resourceId?: number, detail?: string) {

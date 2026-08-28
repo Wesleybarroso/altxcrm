@@ -4,8 +4,9 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { clearCloudflareApiKey, createDomain, createEmailMessage, createMailbox, createWebhook, deleteDomain, deleteMailbox, deleteWebhook, getWebhooks, getWorkspaceSnapshot, hasCloudflareApiKey, logActivity, saveCloudflareApiKey, saveWorkspaceSettings, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook } from "./db";
+import { clearCloudflareApiKey, createDomain, createEmailMessage, createMailbox, createWebhook, createWhatsappSession, deleteDomain, deleteMailbox, deleteWebhook, getOpenwaConfig, getWebhooks, getWhatsappSessions, getWorkspaceSnapshot, hasCloudflareApiKey, hasOpenwaConfig, logActivity, saveCloudflareApiKey, saveOpenwaConfig, saveWorkspaceSettings, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook, updateWhatsappSession } from "./db";
 import { checkMailVpsConnection, mailVpsIntegration } from "./integrations/mailVps";
+import { openwaIntegration } from "./integrations/openwa";
 
 const domainIdInput = z.object({ id: z.number().int().positive() });
 const mailboxInput = z.object({ domainId: z.number().int().positive(), email: z.string().email(), displayName: z.string().min(2).max(160), role: z.string().max(120).optional(), quotaGb: z.number().int().min(1).max(10000).optional() });
@@ -55,6 +56,19 @@ export const appRouter = router({
     cloudflareStatus: protectedProcedure.query(({ ctx }) => hasCloudflareApiKey(ctx.user.id).then((configured) => ({ configured }))),
     saveCloudflareApiKey: protectedProcedure.input(z.object({ apiKey: z.string().trim().min(10).max(500) })).mutation(({ ctx, input }) => saveCloudflareApiKey(ctx.user.id, input.apiKey)),
     removeCloudflareApiKey: protectedProcedure.mutation(({ ctx }) => clearCloudflareApiKey(ctx.user.id)),
+  }),
+  whatsapp: router({
+    configStatus: protectedProcedure.query(({ ctx }) => hasOpenwaConfig(ctx.user.id).then((configured) => ({ configured }))),
+    saveConfig: protectedProcedure.input(z.object({ baseUrl: z.string().url(), apiKey: z.string().trim().min(10).max(500) })).mutation(({ ctx, input }) => saveOpenwaConfig(ctx.user.id, input)),
+    testConnection: protectedProcedure.mutation(async ({ ctx }) => { const config = await getOpenwaConfig(ctx.user.id); if (!config) throw new Error("OpenWA não configurado"); return openwaIntegration.health(config); }),
+    sessions: router({
+      list: protectedProcedure.query(({ ctx }) => getWhatsappSessions(ctx.user.id)),
+      create: protectedProcedure.input(z.object({ name: z.string().regex(/^[a-z0-9-]{3,50}$/, "Use de 3 a 50 caracteres: letras minúsculas, números ou hífen") })).mutation(async ({ ctx, input }) => { const config = await getOpenwaConfig(ctx.user.id); if (!config) throw new Error("OpenWA não configurado"); const remote = await openwaIntegration.createSession(config, input.name); await createWhatsappSession(ctx.user.id, { openwaSessionId: remote.id, name: remote.name, status: remote.status, phone: remote.phone ?? null, pushName: remote.pushName ?? null }); return remote; }),
+      start: protectedProcedure.input(z.object({ sessionId: z.string().min(1).max(120) })).mutation(async ({ ctx, input }) => { const config = await getOpenwaConfig(ctx.user.id); if (!config) throw new Error("OpenWA não configurado"); const remote = await openwaIntegration.startSession(config, input.sessionId); await updateWhatsappSession(ctx.user.id, input.sessionId, { status: remote.status, phone: remote.phone ?? null, pushName: remote.pushName ?? null }); return remote; }),
+      status: protectedProcedure.input(z.object({ sessionId: z.string().min(1).max(120) })).query(async ({ ctx, input }) => { const config = await getOpenwaConfig(ctx.user.id); if (!config) throw new Error("OpenWA não configurado"); const remote = await openwaIntegration.getSession(config, input.sessionId); await updateWhatsappSession(ctx.user.id, input.sessionId, { status: remote.status, phone: remote.phone ?? null, pushName: remote.pushName ?? null }); return remote; }),
+      qr: protectedProcedure.input(z.object({ sessionId: z.string().min(1).max(120) })).query(async ({ ctx, input }) => { const config = await getOpenwaConfig(ctx.user.id); if (!config) throw new Error("OpenWA não configurado"); return openwaIntegration.getQr(config, input.sessionId); }),
+      sendText: protectedProcedure.input(z.object({ sessionId: z.string().min(1).max(120), chatId: z.string().regex(/^\d+@c\.us$/, "Use o formato internacional 5511999999999@c.us"), text: z.string().min(1).max(4096) })).mutation(async ({ ctx, input }) => { const config = await getOpenwaConfig(ctx.user.id); if (!config) throw new Error("OpenWA não configurado"); await getWhatsappSessions(ctx.user.id); return openwaIntegration.sendText(config, input.sessionId, input.chatId, input.text); }),
+    }),
   }),
   webhooks: router({
     list: protectedProcedure.query(({ ctx }) => getWebhooks(ctx.user.id)),
