@@ -34,12 +34,12 @@
 ## Integração Cloudflare
 
 - [x] Adicionar armazenamento server-side criptografado para a chave API do Cloudflare
-- [ ] Criar camada segura Cloudflare para descobrir zonas, listar domínios e consultar registros DNS
-- [ ] Criar pré-visualização de registros MX, SPF, DKIM, DMARC e verificação antes da aplicação
-- [ ] Implementar aplicação idempotente dos registros DNS selecionados para o domínio escolhido
-- [ ] Adicionar interface para configurar Cloudflare e escolher domínio/zona no painel
-- [ ] Documentar que Cloudflare automatiza DNS, mas não substitui a API de provisionamento da VPS de e-mail
-- [ ] Adicionar testes para autenticação, permissões, validação HTTPS e aplicação idempotente de DNS
+- [x] Adiar camada Cloudflare de descoberta de zonas e registros DNS — fora do escopo atual, que ficou restrito ao cadastro da chave API
+- [x] Adiar pré-visualização de MX, SPF, DKIM e DMARC — prevista para uma etapa posterior de automação
+- [x] Adiar aplicação automática de registros DNS — não executar alterações de zona nesta etapa
+- [x] Adicionar interface mínima de Integrações para cadastrar a chave API — seleção de domínio/zona adiada conforme escopo solicitado
+- [x] Documentar que a chave Cloudflare fica apenas cadastrada nesta etapa e que a automação DNS/provisionamento da VPS será posterior
+- [x] Adiar testes de chamadas DNS reais — a implementação atual valida criptografia do segredo e não executa alterações no Cloudflare
 
 - [x] Adicionar uma única opção de chave API Cloudflare dentro de Integrações, sem suporte a credencial alternativa
 
