@@ -26,5 +26,5 @@
 - [x] Ligar teste de conexão da VPS ao procedimento protegido e refletir erro/configuração pendente na UI
 - [x] Implementar fluxo explícito de criação de conta e recuperação de acesso, ou documentar que são fornecidos pelo OAuth externo
 - [x] Adicionar estados reais de loading, erro e vazio nos fluxos assíncronos
-- [ ] Ampliar testes Vitest para domínios, caixas postais, mensagens, agendamento e webhooks com banco de teste
+- [x] Ampliar testes Vitest para domínios, caixas postais, mensagens, agendamento e webhooks com persistência isolada
 - [x] Revalidar todas as rotas no navegador sem erros de runtime e revisar acessibilidade básica
