@@ -1,17 +1,7 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, tinyint, varchar } from "drizzle-orm/mysql-core";
 
-/**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
- */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -22,7 +12,91 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
+export const domains = mysqlTable("domains", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull().references(() => users.id),
+  domain: varchar("domain", { length: 255 }).notNull(),
+  status: mysqlEnum("status", ["pending", "verified", "suspended"]).default("pending").notNull(),
+  dnsTarget: varchar("dnsTarget", { length: 255 }).default("mx.altx.io").notNull(),
+  verifiedAt: timestamp("verifiedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const mailboxes = mysqlTable("mailboxes", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull().references(() => users.id),
+  domainId: int("domainId").notNull().references(() => domains.id),
+  email: varchar("email", { length: 320 }).notNull(),
+  displayName: varchar("displayName", { length: 160 }).notNull(),
+  role: varchar("role", { length: 120 }).default("Equipe").notNull(),
+  quotaGb: int("quotaGb").default(10).notNull(),
+  usedGb: int("usedGb").default(0).notNull(),
+  status: mysqlEnum("status", ["active", "suspended"]).default("active").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const emailMessages = mysqlTable("emailMessages", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull().references(() => users.id),
+  mailboxId: int("mailboxId").notNull().references(() => mailboxes.id),
+  threadId: varchar("threadId", { length: 80 }),
+  senderEmail: varchar("senderEmail", { length: 320 }).notNull(),
+  senderName: varchar("senderName", { length: 160 }),
+  toEmails: text("toEmails").notNull(),
+  ccEmails: text("ccEmails"),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  body: text("body").notNull(),
+  folder: mysqlEnum("folder", ["inbox", "sent", "archived", "trash", "draft"]).default("inbox").notNull(),
+  isRead: tinyint("isRead").default(0).notNull(),
+  isStarred: tinyint("isStarred").default(0).notNull(),
+  scheduledAt: timestamp("scheduledAt"),
+  sentAt: timestamp("sentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const webhooks = mysqlTable("webhooks", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull().references(() => users.id),
+  name: varchar("name", { length: 160 }).notNull(),
+  url: varchar("url", { length: 1024 }).notNull(),
+  secret: varchar("secret", { length: 255 }).notNull(),
+  events: text("events").notNull(),
+  status: mysqlEnum("status", ["active", "paused"]).default("active").notNull(),
+  lastDeliveryAt: timestamp("lastDeliveryAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const activityLogs = mysqlTable("activityLogs", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull().references(() => users.id),
+  action: varchar("action", { length: 120 }).notNull(),
+  resourceType: varchar("resourceType", { length: 80 }).notNull(),
+  resourceId: int("resourceId"),
+  detail: text("detail"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const workspaceSettings = mysqlTable("workspaceSettings", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull().unique().references(() => users.id),
+  storageLimitGb: int("storageLimitGb").default(200).notNull(),
+  providerLabel: varchar("providerLabel", { length: 160 }).default("VPS Altx · Produção").notNull(),
+  integrationEndpoint: varchar("integrationEndpoint", { length: 1024 }).default("api.altx.io/v1/mail").notNull(),
+  mfaRequired: tinyint("mfaRequired").default(1).notNull(),
+  securityAlerts: tinyint("securityAlerts").default(1).notNull(),
+  auditLogEnabled: tinyint("auditLogEnabled").default(1).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
-// TODO: Add your tables here
+export type Domain = typeof domains.$inferSelect;
+export type Mailbox = typeof mailboxes.$inferSelect;
+export type EmailMessage = typeof emailMessages.$inferSelect;
+export type Webhook = typeof webhooks.$inferSelect;
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type WorkspaceSettings = typeof workspaceSettings.$inferSelect;
