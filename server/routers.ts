@@ -1,12 +1,14 @@
 import { z } from "zod";
 import { nanoid } from "nanoid";
+import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { clearCloudflareApiKey, createDomain, createEmailMessage, createMailbox, createWebhook, createWhatsappSession, deleteDomain, deleteMailbox, deleteWebhook, getOpenwaConfig, getWebhooks, getWhatsappSessions, getWorkspaceSnapshot, hasCloudflareApiKey, hasOpenwaConfig, logActivity, saveCloudflareApiKey, saveOpenwaConfig, saveWorkspaceSettings, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook, updateWhatsappSession } from "./db";
+import {   clearCloudflareApiKey, createDomain, createEmailMessage, createMailbox, createWebhook, createWhatsappSession, deleteDomain, deleteMailbox, deleteWebhook, getOpenwaConfig, getWebhookById, getWebhooks, getWhatsappSessions, getWorkspaceSnapshot, hasCloudflareApiKey, hasOpenwaConfig, logActivity, saveCloudflareApiKey, saveOpenwaConfig, saveWorkspaceSettings, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook, updateWhatsappSession } from "./db";
 import { checkMailVpsConnection, mailVpsIntegration } from "./integrations/mailVps";
 import { openwaIntegration } from "./integrations/openwa";
+import { deliverWebhookTest } from "./integrations/webhookDelivery";
 
 const domainIdInput = z.object({ id: z.number().int().positive() });
 const mailboxInput = z.object({ domainId: z.number().int().positive(), email: z.string().email(), displayName: z.string().min(2).max(160), role: z.string().max(120).optional(), quotaGb: z.number().int().min(1).max(10000).optional() });
@@ -75,7 +77,7 @@ export const appRouter = router({
     create: protectedProcedure.input(webhookInput).mutation(({ ctx, input }) => createWebhook(ctx.user.id, { ...input, secret: `whsec_${nanoid(32)}` })),
     update: protectedProcedure.input(webhookInput.extend({ id: z.number().int().positive(), status: z.enum(["active", "paused"]).optional() })).mutation(({ ctx, input }) => { const { id, ...values } = input; return updateWebhook(ctx.user.id, id, values); }),
     remove: protectedProcedure.input(domainIdInput).mutation(({ ctx, input }) => deleteWebhook(ctx.user.id, input.id)),
-    test: protectedProcedure.input(domainIdInput).mutation(async ({ ctx, input }) => { await logActivity(ctx.user.id, "Webhook testado", "webhook", input.id, "Teste solicitado pela interface"); return { success: true, status: 200 } as const; }),
+    test: protectedProcedure.input(domainIdInput).mutation(async ({ ctx, input }) => { const webhook = await getWebhookById(ctx.user.id, input.id); if (!webhook) throw new TRPCError({ code: "NOT_FOUND", message: "Webhook não encontrado" }); let events: string[] = []; try { events = JSON.parse(webhook.events) as string[]; } catch { events = []; } const result = await deliverWebhookTest({ url: webhook.url, secret: webhook.secret, events }); await logActivity(ctx.user.id, "Webhook testado", "webhook", input.id, `Entrega de teste HTTP ${result.status}`); return result; }),
   }),
 });
 

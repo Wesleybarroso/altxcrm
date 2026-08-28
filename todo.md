@@ -47,10 +47,10 @@
 
 ## Integração n8n
 
-- [ ] Adicionar integração n8n com endpoint webhook HTTPS na área de Integrações
-- [ ] Permitir selecionar eventos e criar um webhook n8n com segredo gerado no backend
-- [ ] Adicionar teste de conexão e instruções para configurar o Webhook node no n8n
-- [ ] Validar o fluxo n8n com testes, build e revisão visual
+- [x] Adicionar integração n8n com endpoint webhook HTTPS na área de Integrações
+- [x] Permitir selecionar eventos e criar um webhook n8n com segredo gerado no backend
+- [x] Adicionar teste de conexão real e instruções para configurar o Webhook node no n8n
+- [x] Validar o fluxo n8n com 26 testes passando, build de produção e revisão visual em desktop e mobile
 
 ## Integração WhatsApp / OpenWA
 

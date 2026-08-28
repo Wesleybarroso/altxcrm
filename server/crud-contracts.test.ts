@@ -10,6 +10,7 @@ const dbMocks = vi.hoisted(() => ({
   deleteMailbox: vi.fn(),
   deleteWebhook: vi.fn(),
   getWebhooks: vi.fn(),
+  getWebhookById: vi.fn(),
   getDb: vi.fn(),
   getWorkspaceSnapshot: vi.fn(),
   logActivity: vi.fn(),
@@ -20,6 +21,8 @@ const dbMocks = vi.hoisted(() => ({
   updateMessageStatus: vi.fn(),
   updateWebhook: vi.fn(),
 }));
+
+const webhookMocks = vi.hoisted(() => ({ deliver: vi.fn() }));
 
 const mailMocks = vi.hoisted(() => ({
   createDomain: vi.fn(),
@@ -33,6 +36,7 @@ const mailMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./db", () => dbMocks);
+vi.mock("./integrations/webhookDelivery", () => ({ deliverWebhookTest: webhookMocks.deliver }));
 vi.mock("./integrations/mailVps", () => ({
   checkMailVpsConnection: mailMocks.health,
   mailVpsIntegration: {
@@ -150,7 +154,10 @@ describe("AltxCRM CRUD coverage", () => {
       ...snapshot,
       messages: [{ id: 31, ownerId: user.id, mailboxId: 21, senderEmail: "cliente@example.com", senderName: "Cliente", toEmails: JSON.stringify(["ops@altx.test"]), ccEmails: null, subject: "Novo pedido", body: "Conteúdo", folder: "inbox", scheduledAt: null, sentAt: null, isRead: 0, isStarred: 0 }],
     });
-    dbMocks.getWebhooks.mockResolvedValue([{ id: 41, ownerId: user.id, name: "n8n", url: "https://hooks.example.com/altx", secret: "whsec_test", events: JSON.stringify(["message.received"]), status: "active", lastDeliveryAt: null, createdAt: new Date(), updatedAt: new Date() }]);
+    const webhook = { id: 41, ownerId: user.id, name: "n8n", url: "https://hooks.example.com/altx", secret: "whsec_test", events: JSON.stringify(["message.received"]), status: "active" as const, lastDeliveryAt: null, createdAt: new Date(), updatedAt: new Date() };
+    dbMocks.getWebhooks.mockResolvedValue([webhook]);
+    dbMocks.getWebhookById.mockResolvedValue(webhook);
+    webhookMocks.deliver.mockResolvedValue({ success: true, status: 200 });
     dbMocks.updateDomainStatus.mockResolvedValue(undefined);
     dbMocks.deleteDomain.mockResolvedValue(undefined);
     dbMocks.updateMailbox.mockResolvedValue(undefined);
@@ -217,6 +224,7 @@ describe("AltxCRM CRUD coverage", () => {
     expect(webhooks[0]?.name).toBe("n8n");
     const result = await caller.webhooks.test({ id: 41 });
     expect(result).toEqual({ success: true, status: 200 });
-    expect(dbMocks.logActivity).toHaveBeenCalledWith(user.id, "Webhook testado", "webhook", 41, "Teste solicitado pela interface");
+    expect(webhookMocks.deliver).toHaveBeenCalledWith({ url: "https://hooks.example.com/altx", secret: "whsec_test", events: ["message.received"] });
+    expect(dbMocks.logActivity).toHaveBeenCalledWith(user.id, "Webhook testado", "webhook", 41, "Entrega de teste HTTP 200");
   });
 });

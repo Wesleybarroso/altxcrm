@@ -109,6 +109,13 @@ export async function getWebhooks(ownerId: number) {
   return db.select().from(webhooks).where(eq(webhooks.ownerId, ownerId)).orderBy(desc(webhooks.createdAt));
 }
 
+export async function getWebhookById(ownerId: number, id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db.select().from(webhooks).where(and(eq(webhooks.ownerId, ownerId), eq(webhooks.id, id))).limit(1);
+  return rows[0];
+}
+
 export async function createEmailMessage(ownerId: number, input: { mailboxId: number; senderEmail: string; senderName?: string; toEmails: string[]; ccEmails?: string[]; subject: string; body: string; folder?: "inbox" | "sent" | "archived" | "trash" | "draft"; scheduledAt?: Date }) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
