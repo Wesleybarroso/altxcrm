@@ -60,3 +60,35 @@
 - [x] Documentar a futura ligação de eventos OpenWA com o sistema de webhooks/n8n; receptor inbound funcional permanece como próxima etapa
 - [x] Documentar requisitos de VPS persistente, volume de sessão, TLS e risco de uso de API não oficial
 - [x] Criar testes server-side sem rede real e validar build/experiência da nova área
+
+## Central completa de WhatsApp
+
+- [x] Confirmar endpoints OpenWA para chats, mensagens, mídia, contatos e status de entrega
+- [x] Criar listagem de conversas com busca, filtros, não lidas e atualização periódica
+- [x] Criar leitura de mensagens por conversa e marcar como lida
+- [x] Adicionar envio de texto e resposta pelo composer da central; encaminhamento e exclusão permanecem dependentes das próximas rotas OpenWA
+- [ ] Adicionar envio/recebimento de mídia e anexos quando suportados pelo gateway
+- [ ] Adicionar área de contatos, perfil do contato e ações de conversa
+- [ ] Adicionar notificações e eventos inbound ligados aos webhooks/n8n
+- [ ] Documentar limites do OpenWA e alternativa WhatsApp Cloud API
+- [x] Criar testes server-side, validar build e revisar a central em desktop/mobile
+
+- [x] Adicionar filtros explícitos Todas, Não lidas, Grupos e Diretas na central WhatsApp
+- [x] Implementar respostas citadas usando `POST /messages/reply` e `messageId`
+- [x] Exibir status opcional de envio, entrega, leitura e falha quando o gateway fornecer o estado
+- [ ] Criar receptor inbound autenticado para eventos OpenWA e atualizar histórico/status em tempo real
+
+
+## Internacionalização
+
+- [ ] Auditar textos fixos, labels, placeholders, mensagens e estados que permanecem em português após a troca de idioma
+- [ ] Corrigir componentes para usar o idioma selecionado de forma consistente
+- [ ] Validar troca de idioma nas rotas principais e adicionar ou atualizar testes relevantes
+
+
+## Correção da auditoria de internacionalização
+
+- [ ] Substituir a mutação de DOM por uma camada i18n real nos componentes e remover os principais textos hardcoded
+- [ ] Cobrir DashboardLayout, AppTopBar, Settings, Home, WhatsApp e demais rotas com strings traduzidas, incluindo toasts, placeholders, acessibilidade e estados
+- [ ] Validar manualmente a troca de idioma nas rotas autenticadas principais
+- [x] Ajustar a configuração do Vitest para executar testes client-side de i18n

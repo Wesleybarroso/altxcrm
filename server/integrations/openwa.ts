@@ -19,6 +19,9 @@ async function request<T>(config: OpenwaConfig, options: OpenwaRequestOptions): 
 }
 
 export type OpenwaSession = { id: string; name: string; status: string; phone?: string; pushName?: string };
+export type OpenwaChat = { id: string; name?: string; unreadCount?: number; isGroup?: boolean; lastMessage?: { body?: string; timestamp?: number; fromMe?: boolean; type?: string } | null };
+export type OpenwaMessage = { id: string; chatId?: string; body?: string; from?: string; fromMe?: boolean; type?: string; timestamp?: number; hasMedia?: boolean; mediaUrl?: string };
+export type OpenwaContact = { id: string; name?: string; pushName?: string; number?: string; isBusiness?: boolean };
 
 export const openwaIntegration = {
   health: (config: OpenwaConfig) => request<{ status: string }>(config, { path: "/health" }),
@@ -28,4 +31,9 @@ export const openwaIntegration = {
   getSession: (config: OpenwaConfig, sessionId: string) => request<OpenwaSession>(config, { path: `/sessions/${encodeURIComponent(sessionId)}` }),
   getQr: (config: OpenwaConfig, sessionId: string) => request<{ qrCode: string; status: string }>(config, { path: `/sessions/${encodeURIComponent(sessionId)}/qr` }),
   sendText: (config: OpenwaConfig, sessionId: string, chatId: string, text: string) => request<{ messageId: string; timestamp: number }>(config, { method: "POST", path: `/sessions/${encodeURIComponent(sessionId)}/messages/send-text`, body: { chatId, text } }),
+  reply: (config: OpenwaConfig, sessionId: string, chatId: string, messageId: string, text: string) => request<{ messageId: string; timestamp: number }>(config, { method: "POST", path: `/sessions/${encodeURIComponent(sessionId)}/messages/reply`, body: { chatId, messageId, text } }),
+  listChats: (config: OpenwaConfig, sessionId: string) => request<OpenwaChat[]>(config, { path: `/sessions/${encodeURIComponent(sessionId)}/chats?limit=100&offset=0` }),
+  getChatHistory: (config: OpenwaConfig, sessionId: string, chatId: string) => request<OpenwaMessage[]>(config, { path: `/sessions/${encodeURIComponent(sessionId)}/messages/${encodeURIComponent(chatId)}/history` }),
+  markChatRead: (config: OpenwaConfig, sessionId: string, chatId: string, messageIds?: string[]) => request<{ success: boolean }>(config, { method: "POST", path: `/sessions/${encodeURIComponent(sessionId)}/chats/read`, body: { chatId, ...(messageIds?.length ? { messageIds } : {}) } }),
+  listContacts: (config: OpenwaConfig, sessionId: string) => request<OpenwaContact[]>(config, { path: `/sessions/${encodeURIComponent(sessionId)}/contacts?limit=100&offset=0` }),
 };

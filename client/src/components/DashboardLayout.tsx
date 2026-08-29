@@ -44,6 +44,7 @@ import {
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
+import { LanguageSelect, useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "./ui/button";
 
 const menuSections = [
@@ -84,6 +85,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -95,17 +97,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="editorial-grid editorial-glow flex min-h-screen items-center justify-center bg-[#071013] px-6 text-[#f4f5eb]">
         <div className="w-full max-w-md rounded-2xl border border-[#87bc9e]/25 bg-[#0b1b1e]/90 p-8 shadow-2xl shadow-black/30">
-          <div className="mb-10 flex items-center gap-3">
+          <div className="mb-10 flex items-center justify-between gap-3"><div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#c8ff4f] text-[#102017]"><MailPlus className="h-5 w-5" /></div>
-            <div><div className="text-sm font-bold tracking-[0.2em]">ALTXCRM</div><div className="micro-label mt-1 text-[#7ea692]">Workspace de e-mail</div></div>
+            <div><div className="text-sm font-bold tracking-[0.2em]">ALTXCRM</div><div className="micro-label mt-1 text-[#7ea692]">{t("Workspace de e-mail")}</div></div></div><LanguageSelect />
           </div>
-          <div className="micro-label mb-3 text-[#c8ff4f]">Acesso restrito · 01</div>
-          <h1 className="display-font text-4xl leading-none">Entre para cuidar da sua operação.</h1>
-          <p className="mt-4 text-sm leading-6 text-[#91ada0]">O painel centraliza domínios, caixas postais, mensagens e integrações da sua infraestrutura.</p>
-          <Button onClick={() => startLogin()} className="action-button mt-8 h-12 w-full rounded-lg bg-[#c8ff4f] font-bold text-[#112119] hover:bg-[#d9ff80]">Continuar com Google / OAuth</Button>
-          <div className="mt-3 grid grid-cols-2 gap-2"><Button variant="outline" onClick={() => startLogin()} className="h-10 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">Criar conta</Button><Button variant="outline" onClick={() => startLogin()} className="h-10 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">Esqueci a senha</Button></div>
-          <p className="mt-3 text-center text-[11px] leading-5 text-[#638277]">A criação e a recuperação de acesso são concluídas com segurança no Google/OAuth.</p>
-          <div className="mt-6 flex items-center gap-2 text-xs text-[#638277]"><ShieldCheck className="h-4 w-4 text-[#92cf8e]" /> Sessão protegida e dados isolados por workspace.</div>
+          <div className="micro-label mb-3 text-[#c8ff4f]">{t("Acesso restrito · 01")}</div>
+          <h1 className="display-font text-4xl leading-none">{t("Entre para cuidar da sua operação.")}</h1>
+          <p className="mt-4 text-sm leading-6 text-[#91ada0]">{t("O painel centraliza domínios, caixas postais, mensagens e integrações da sua infraestrutura.")}</p>
+          <Button onClick={() => startLogin()} className="action-button mt-8 h-12 w-full rounded-lg bg-[#c8ff4f] font-bold text-[#112119] hover:bg-[#d9ff80]">{t("Continuar com Google / OAuth")}</Button>
+          <div className="mt-3 grid grid-cols-2 gap-2"><Button variant="outline" onClick={() => startLogin()} className="h-10 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">{t("Criar conta")}</Button><Button variant="outline" onClick={() => startLogin()} className="h-10 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">{t("Esqueci a senha")}</Button></div>
+          <p className="mt-3 text-center text-[11px] leading-5 text-[#638277]">{t("A criação e a recuperação de acesso são concluídas com segurança no Google/OAuth.")}</p>
+          <div className="mt-6 flex items-center gap-2 text-xs text-[#638277]"><ShieldCheck className="h-4 w-4 text-[#92cf8e]" /> {t("Sessão protegida e dados isolados por workspace.")}</div>
         </div>
       </div>
     );
@@ -124,6 +126,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
+  const { t } = useLanguage();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -163,15 +166,15 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
           </SidebarHeader>
           <SidebarContent className="scroll-thin px-3 py-5">
             {menuSections.map((section) => (
-              <div key={section.label} className="mb-6">
-                {!isCollapsed && <div className="micro-label mb-2 px-3 text-[#55776d]">{section.label}</div>}
+              <div key={t(section.label)} className="mb-6">
+                {!isCollapsed && <div className="micro-label mb-2 px-3 text-[#55776d]">{t(section.label)}</div>}
                 <SidebarMenu>
                   {section.items.map((item) => {
                     const isActive = location === item.path;
                     return (
                       <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton isActive={isActive} onClick={() => setLocation(item.path)} tooltip={item.label} className={`h-10 rounded-lg text-sm transition-all ${isActive ? "bg-[#183b38] text-[#c8ff4f] shadow-[inset_3px_0_0_#c8ff4f]" : "text-[#89a79a] hover:bg-[#112a2a] hover:text-[#eaf5e8]"}`}>
-                          <item.icon aria-hidden="true" strokeWidth={1.65} className={`h-[17px] w-[17px] shrink-0 ${isActive ? "text-[#c8ff4f]" : ""}`} /><span>{item.label}</span>
+                        <SidebarMenuButton isActive={isActive} onClick={() => setLocation(item.path)} tooltip={t(item.label)} className={`h-10 rounded-lg text-sm transition-all ${isActive ? "bg-[#183b38] text-[#c8ff4f] shadow-[inset_3px_0_0_#c8ff4f]" : "text-[#89a79a] hover:bg-[#112a2a] hover:text-[#eaf5e8]"}`}>
+                          <item.icon aria-hidden="true" strokeWidth={1.65} className={`h-[17px] w-[17px] shrink-0 ${isActive ? "text-[#c8ff4f]" : ""}`} /><span>{t(item.label)}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );
@@ -202,7 +205,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
         <div className={`absolute right-0 top-0 h-full w-1 cursor-col-resize transition-colors hover:bg-[#c8ff4f]/30 ${isCollapsed ? "hidden" : ""}`} onMouseDown={() => !isCollapsed && setIsResizing(true)} style={{ zIndex: 50 }} />
       </div>
       <SidebarInset className="bg-[#071013]">
-        {isMobile && <div className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-[#20403e] bg-[#091517]/95 px-3 backdrop-blur"><SidebarTrigger className="h-9 w-9 rounded-lg bg-[#102523] text-[#c8ff4f]" /><span className="text-sm font-semibold text-[#eaf5e8]">{menuSections.flatMap(section => section.items).find(item => item.path === location)?.label || "AltxCRM"}</span></div>}
+        {isMobile && <div className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-[#20403e] bg-[#091517]/95 px-3 backdrop-blur"><SidebarTrigger className="h-9 w-9 rounded-lg bg-[#102523] text-[#c8ff4f]" /><span className="text-sm font-semibold text-[#eaf5e8]">{t(menuSections.flatMap(section => section.items).find(item => item.path === location)?.label || "AltxCRM")}</span></div>}
         <main className="min-h-screen">{children}</main>
       </SidebarInset>
     </>

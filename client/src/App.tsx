@@ -4,6 +4,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import DashboardLayout from "./components/DashboardLayout";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import Home from "./pages/Home";
 import Domains from "./pages/Domains";
 import Mailboxes from "./pages/Mailboxes";
@@ -41,10 +42,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
+        <LanguageProvider>
         <TooltipProvider>
           <Toaster position="bottom-right" toastOptions={{ style: { background: "#102523", border: "1px solid #31584e", color: "#eaf5e8" } }} />
           <Router />
         </TooltipProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
