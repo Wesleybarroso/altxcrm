@@ -1,0 +1,3 @@
+# Validação visual recente
+
+As rotas `/whatsapp` e `/appointments` foram capturadas em desktop (1280×720) e mobile (390×844) após as últimas alterações. O painel WhatsApp mantém filtros, composer, seleção de conversa, configuração de gateway, sessões e contatos em fluxo vertical utilizável no mobile. A rota Agendamentos mantém controles de período, busca, alternância mês/semana/dia, grade horária e cards de próximos atendimentos sem overflow horizontal crítico no viewport móvel. A captura foi feita no preview do projeto; o servidor registrou ausência de sessão para dados reais, portanto os estados observados são os estados de configuração/empty-state, não mensagens ou anexos reais do gateway.
