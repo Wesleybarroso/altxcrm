@@ -153,3 +153,5 @@
 - [ ] Criar evidência visual específica com exemplos de imagem, vídeo, áudio e documento no histórico/composer
 
 - [x] Expor feed protegido de atividades recentes por workspace para consumo de notificações e eventos inbound
+
+- [x] Conectar o sino global e o feed protegido de atividades aos eventos registrados pelo receptor inbound
