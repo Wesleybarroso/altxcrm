@@ -250,6 +250,13 @@ export async function updateWhatsappSession(ownerId: number, openwaSessionId: st
   await db.update(whatsappSessions).set({ ...input, lastSyncedAt: new Date() }).where(and(eq(whatsappSessions.ownerId, ownerId), eq(whatsappSessions.openwaSessionId, openwaSessionId)));
 }
 
+export async function getAppointment(ownerId: number, id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db.select().from(appointments).where(and(eq(appointments.ownerId, ownerId), eq(appointments.id, id))).limit(1);
+  return rows[0];
+}
+
 export async function getAppointments(ownerId: number, range?: { from?: Date; to?: Date }) {
   const db = await getDb();
   if (!db) return [];

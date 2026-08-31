@@ -121,3 +121,5 @@
 - [ ] Completar contatos e perfil de contato na central WhatsApp
 - [ ] Completar envio/recebimento de mídia quando suportado pelo gateway
 - [ ] Ligar eventos inbound gerais do WhatsApp a notificações e histórico em tempo real
+
+- [x] Adicionar procedimento protegido de confirmação de atendimento via WhatsApp com chat vinculado e registro de envio
