@@ -14,6 +14,8 @@ const dbMocks = vi.hoisted(() => ({
   getWebhooks: vi.fn(),
   getWebhookById: vi.fn(),
   getAppointments: vi.fn(),
+  getAppointment: vi.fn(),
+  setAppointmentScheduleTaskUid: vi.fn(),
   getDb: vi.fn(),
   getWorkspaceSnapshot: vi.fn(),
   logActivity: vi.fn(),
@@ -27,6 +29,7 @@ const dbMocks = vi.hoisted(() => ({
 }));
 
 const webhookMocks = vi.hoisted(() => ({ deliver: vi.fn() }));
+const heartbeatMocks = vi.hoisted(() => ({ create: vi.fn(), update: vi.fn(), remove: vi.fn() }));
 
 const mailMocks = vi.hoisted(() => ({
   createDomain: vi.fn(),
@@ -41,6 +44,7 @@ const mailMocks = vi.hoisted(() => ({
 
 vi.mock("./db", () => dbMocks);
 vi.mock("./integrations/webhookDelivery", () => ({ deliverWebhookTest: webhookMocks.deliver }));
+vi.mock("./_core/heartbeat", () => ({ createHeartbeatJob: heartbeatMocks.create, updateHeartbeatJob: heartbeatMocks.update, deleteHeartbeatJob: heartbeatMocks.remove }));
 vi.mock("./integrations/mailVps", () => ({
   checkMailVpsConnection: mailMocks.health,
   mailVpsIntegration: {
@@ -88,6 +92,11 @@ describe("AltxCRM CRUD contracts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     dbMocks.getWorkspaceSnapshot.mockResolvedValue(snapshot);
+    dbMocks.getAppointment.mockResolvedValue({ id: 51, ownerId: user.id, patientName: "Cliente", whatsappChatId: "5511999999999@c.us", whatsappSessionId: "session-main", scheduleCronTaskUid: "task-51", status: "scheduled" });
+    dbMocks.setAppointmentScheduleTaskUid.mockResolvedValue(undefined);
+    heartbeatMocks.create.mockResolvedValue({ taskUid: "task-51", nextExecutionAt: null });
+    heartbeatMocks.update.mockResolvedValue({});
+    heartbeatMocks.remove.mockResolvedValue(undefined);
     dbMocks.createAppointment.mockResolvedValue(51);
     dbMocks.createDomain.mockResolvedValue(11);
     dbMocks.createMailbox.mockResolvedValue(21);
@@ -144,13 +153,33 @@ describe("AltxCRM CRUD contracts", () => {
     const caller = appRouter.createCaller(context(user));
     const startsAt = new Date("2026-09-03T13:00:00.000Z");
     const endsAt = new Date("2026-09-03T14:00:00.000Z");
-    await caller.appointments.create({ patientName: "Marina Costa", patientPhone: "5511999999999", service: "Avaliação odontológica", professional: "Dra. Helena Costa", startsAt, endsAt, source: "whatsapp", whatsappChatId: "5511999999999@c.us" });
+    await caller.appointments.create({ patientName: "Marina Costa", patientPhone: "5511999999999", service: "Avaliação odontológica", professional: "Dra. Helena Costa", startsAt, endsAt, source: "whatsapp", whatsappChatId: "5511999999999@c.us", whatsappSessionId: "session-main" });
     expect(dbMocks.createAppointment).toHaveBeenCalledWith(user.id, expect.objectContaining({ source: "whatsapp", whatsappChatId: "5511999999999@c.us", startsAt, endsAt }));
-    await caller.appointments.createFromWhatsApp({ patientName: "Rafael Lima", service: "Retorno", professional: "Dr. Paulo Mendes", startsAt, endsAt, source: "whatsapp", whatsappChatId: "5511888888888@c.us" });
+    await caller.appointments.createFromWhatsApp({ patientName: "Rafael Lima", service: "Retorno", professional: "Dr. Paulo Mendes", startsAt, endsAt, source: "whatsapp", whatsappChatId: "5511888888888@c.us", whatsappSessionId: "session-main" });
     expect(dbMocks.createAppointment).toHaveBeenCalledWith(user.id, expect.objectContaining({ source: "whatsapp", whatsappChatId: "5511888888888@c.us" }));
     await caller.appointments.confirm({ id: 51 });
     expect(dbMocks.updateAppointment).toHaveBeenCalledWith(user.id, 51, { status: "confirmed" });
     await expect(caller.appointments.createFromWhatsApp({ patientName: "Sem chat", service: "Retorno", professional: "Dr. Paulo Mendes", startsAt, endsAt, source: "whatsapp" })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.appointments.createFromWhatsApp({ patientName: "Sem sessão", service: "Retorno", professional: "Dr. Paulo Mendes", startsAt, endsAt, source: "whatsapp", whatsappChatId: "5511888888888@c.us" })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("bloqueia a criação de lembrete Heartbeat fora de produção", async () => {
+    const caller = appRouter.createCaller(context(user));
+    await expect(caller.appointments.scheduleReminder({ id: 51, cron: "0 0 9 * * *" })).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+  });
+
+  it("pausa e retoma um lembrete pelo task UID persistido", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    try {
+      const caller = appRouter.createCaller(context(user));
+      await caller.appointments.pauseReminder({ id: 51 });
+      await caller.appointments.resumeReminder({ id: 51 });
+      expect(heartbeatMocks.update).toHaveBeenNthCalledWith(1, "task-51", { enable: false }, "");
+      expect(heartbeatMocks.update).toHaveBeenNthCalledWith(2, "task-51", { enable: true }, "");
+    } finally {
+      process.env.NODE_ENV = previousNodeEnv;
+    }
   });
 
   it("valida que o horário final seja posterior ao inicial", async () => {

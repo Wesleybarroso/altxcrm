@@ -1,0 +1,1 @@
+ALTER TABLE `appointments` ADD `whatsappSessionId` varchar(120);

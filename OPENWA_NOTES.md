@@ -72,3 +72,8 @@ O AltxCRM expõe `POST /api/automation/appointments/:secret` para automações a
 Fonte: https://raw.githubusercontent.com/rmyndharis/OpenWA/main/docs/06-api-specification.md, consultada em 31/08/2026.
 
 A especificação confirma que a API usa o prefixo `/api`, autenticação por `X-API-Key` e operações de envio exigem papel `OPERATOR`. Os endpoints de mídia aceitam URL ou base64; no caso de base64, o `mimetype` é obrigatório. Há limites de tamanho, validação contra SSRF em URLs, exigência de sessão ativa e possibilidade de resposta 501 quando o engine não suporta a operação. O contrato deve permanecer no transporte server-side, sem expor a API key ao navegador.
+
+
+## Lembretes recorrentes da agenda
+
+Os lembretes automáticos usam Heartbeat e o callback `/api/scheduled/appointment-reminder`. Cada agendamento guarda `scheduleCronTaskUid` e `whatsappSessionId`, permitindo processar o job na sessão correta e evitar duplicidade por `reminderSentAt`. A criação do job é bloqueada fora de `NODE_ENV=production`; portanto, o projeto deve ser publicado antes de ativar lembretes. O AltxCRM oferece criação, pausa, retomada e cancelamento do job por procedures protegidos, sempre vinculados ao workspace do usuário.

@@ -36,6 +36,20 @@
       "when": 1788207523504,
       "tag": "0004_slippery_mandroid",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1788216852604,
+      "tag": "0005_freezing_firebird",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1788217034812,
+      "tag": "0006_windy_tana_nile",
+      "breakpoints": true
     }
   ]
 }

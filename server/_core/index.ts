@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { registerAppointmentWebhook } from "../integrations/appointmentWebhook";
 import { registerOpenwaWebhook } from "../integrations/openwaWebhook";
+import { handleAppointmentReminder } from "../integrations/appointmentReminder";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -40,6 +41,7 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerAppointmentWebhook(app);
   registerOpenwaWebhook(app);
+  app.post("/api/scheduled/appointment-reminder", handleAppointmentReminder);
   // tRPC API
   app.use(
     "/api/trpc",

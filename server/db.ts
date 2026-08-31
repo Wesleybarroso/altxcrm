@@ -256,6 +256,19 @@ export async function updateWhatsappSession(ownerId: number, openwaSessionId: st
   await db.update(whatsappSessions).set({ ...input, lastSyncedAt: new Date() }).where(and(eq(whatsappSessions.ownerId, ownerId), eq(whatsappSessions.openwaSessionId, openwaSessionId)));
 }
 
+export async function getAppointmentByScheduleTaskUid(taskUid: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db.select().from(appointments).where(eq(appointments.scheduleCronTaskUid, taskUid)).limit(1);
+  return rows[0];
+}
+
+export async function setAppointmentScheduleTaskUid(ownerId: number, id: number, taskUid: string | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(appointments).set({ scheduleCronTaskUid: taskUid }).where(and(eq(appointments.id, id), eq(appointments.ownerId, ownerId)));
+}
+
 export async function getAppointment(ownerId: number, id: number) {
   const db = await getDb();
   if (!db) return undefined;
@@ -272,17 +285,17 @@ export async function getAppointments(ownerId: number, range?: { from?: Date; to
   return db.select().from(appointments).where(and(...conditions)).orderBy(appointments.startsAt);
 }
 
-export async function createAppointment(ownerId: number, input: { patientName: string; patientPhone?: string; patientEmail?: string; service: string; professional: string; room?: string; startsAt: Date; endsAt: Date; status?: "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show"; source?: "manual" | "whatsapp"; whatsappChatId?: string; notes?: string }) {
+export async function createAppointment(ownerId: number, input: { patientName: string; patientPhone?: string; patientEmail?: string; service: string; professional: string; room?: string; startsAt: Date; endsAt: Date; status?: "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show"; source?: "manual" | "whatsapp"; whatsappChatId?: string; whatsappSessionId?: string; notes?: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   if (input.endsAt <= input.startsAt) throw new Error("Appointment end must be after start");
-  const result = await db.insert(appointments).values({ ownerId, patientName: input.patientName.trim(), patientPhone: input.patientPhone?.trim() || null, patientEmail: input.patientEmail?.trim() || null, service: input.service.trim(), professional: input.professional.trim(), room: input.room?.trim() || null, startsAt: input.startsAt, endsAt: input.endsAt, status: input.status ?? "scheduled", source: input.source ?? "manual", whatsappChatId: input.whatsappChatId?.trim() || null, notes: input.notes?.trim() || null });
+  const result = await db.insert(appointments).values({ ownerId, patientName: input.patientName.trim(), patientPhone: input.patientPhone?.trim() || null, patientEmail: input.patientEmail?.trim() || null, service: input.service.trim(), professional: input.professional.trim(), room: input.room?.trim() || null, startsAt: input.startsAt, endsAt: input.endsAt, status: input.status ?? "scheduled", source: input.source ?? "manual", whatsappChatId: input.whatsappChatId?.trim() || null, whatsappSessionId: input.whatsappSessionId?.trim() || null, notes: input.notes?.trim() || null });
   const id = Number(result[0].insertId);
   await logActivity(ownerId, "Agendamento criado", "appointment", id, `${input.patientName} · ${input.service}`);
   return id;
 }
 
-export async function updateAppointment(ownerId: number, id: number, input: { patientName?: string; patientPhone?: string | null; patientEmail?: string | null; service?: string; professional?: string; room?: string | null; startsAt?: Date; endsAt?: Date; status?: "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show"; notes?: string | null; confirmationSentAt?: Date | null; reminderSentAt?: Date | null }) {
+export async function updateAppointment(ownerId: number, id: number, input: { patientName?: string; patientPhone?: string | null; patientEmail?: string | null; service?: string; professional?: string; room?: string | null; startsAt?: Date; endsAt?: Date; status?: "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show"; whatsappSessionId?: string | null; notes?: string | null; confirmationSentAt?: Date | null; reminderSentAt?: Date | null }) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   if (input.startsAt && input.endsAt && input.endsAt <= input.startsAt) throw new Error("Appointment end must be after start");

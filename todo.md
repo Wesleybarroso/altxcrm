@@ -155,3 +155,16 @@
 - [x] Expor feed protegido de atividades recentes por workspace para consumo de notificações e eventos inbound
 
 - [x] Conectar o sino global e o feed protegido de atividades aos eventos registrados pelo receptor inbound
+
+- [x] Adicionar `scheduleCronTaskUid` aos agendamentos e aplicar migration segura
+- [x] Criar callback Heartbeat em `/api/scheduled/appointment-reminder` com autenticação cron e processamento idempotente
+- [x] Expor ação protegida para configurar/pausar lembretes sem criar jobs antes do deploy
+- [x] Testar o contrato de lembrete e documentar que a ativação efetiva exige deploy do projeto
+
+
+## Correções do Heartbeat
+
+- [x] Persistir a sessão WhatsApp vinculada ao agendamento e usar essa sessão no callback
+- [x] Testar o callback de lembrete para autenticação cron, órfão, idempotência e envio usando sessão WhatsApp válida
+- [x] Adicionar pausar/retomar lembrete com updateHeartbeatJob
+- [x] Bloquear criação de jobs em desenvolvimento e documentar que a ativação exige deploy de produção
