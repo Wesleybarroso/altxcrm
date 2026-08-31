@@ -68,7 +68,7 @@
 - [x] Criar leitura de mensagens por conversa e marcar como lida
 - [x] Adicionar envio de texto e resposta pelo composer da central; encaminhamento e exclusão permanecem dependentes das próximas rotas OpenWA
 - [ ] Adicionar envio/recebimento de mídia e anexos quando suportados pelo gateway
-- [ ] Adicionar área de contatos, perfil do contato e ações de conversa
+- [x] Adicionar área de contatos, perfil do contato e ações de conversa
 - [ ] Adicionar notificações e eventos inbound ligados aos webhooks/n8n
 - [x] Documentar limites do OpenWA e alternativa WhatsApp Cloud API
 - [x] Criar testes server-side, validar build e revisar a central em desktop/mobile
@@ -116,9 +116,9 @@
 
 ## Continuação solicitada
 
-- [ ] Salvar checkpoint após a renomeação universal para Agendamentos
+- [x] Salvar checkpoint após a renomeação universal para Agendamentos
 - [ ] Conectar confirmação, lembrete e reagendamento da agenda ao fluxo de WhatsApp
-- [ ] Completar contatos e perfil de contato na central WhatsApp
+- [x] Completar contatos e perfil de contato na central WhatsApp
 - [ ] Completar envio/recebimento de mídia quando suportado pelo gateway
 - [ ] Ligar eventos inbound gerais do WhatsApp a notificações e histórico em tempo real
 
