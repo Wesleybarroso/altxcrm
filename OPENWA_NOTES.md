@@ -65,3 +65,10 @@ Para operação crítica, campanhas de maior escala ou requisitos de conformidad
 ## Receptor inbound do AltxCRM
 
 O AltxCRM expõe `POST /api/automation/appointments/:secret` para automações autenticadas por um segredo de webhook ativo. Os eventos aceitos são `appointment.created`, `appointment.confirmed`, `appointment.updated` e `appointment.cancelled`. A criação exige `patientName`, `service`, `professional`, `startsAt` e `endsAt`; a origem é gravada como `whatsapp` e o campo `whatsappChatId` vincula a consulta à conversa. O n8n pode chamar esse endpoint após interpretar uma intenção de agendamento, confirmação ou reagendamento.
+
+
+## Referência OpenWA para mídia
+
+Fonte: https://raw.githubusercontent.com/rmyndharis/OpenWA/main/docs/06-api-specification.md, consultada em 31/08/2026.
+
+A especificação confirma que a API usa o prefixo `/api`, autenticação por `X-API-Key` e operações de envio exigem papel `OPERATOR`. Os endpoints de mídia aceitam URL ou base64; no caso de base64, o `mimetype` é obrigatório. Há limites de tamanho, validação contra SSRF em URLs, exigência de sessão ativa e possibilidade de resposta 501 quando o engine não suporta a operação. O contrato deve permanecer no transporte server-side, sem expor a API key ao navegador.

@@ -123,3 +123,12 @@
 - [ ] Ligar eventos inbound gerais do WhatsApp a notificações e histórico em tempo real
 
 - [x] Adicionar procedimento protegido de confirmação de atendimento via WhatsApp com chat vinculado e registro de envio
+
+
+## Ordem de prioridade confirmada
+
+- [ ] Prioridade 1: implementar envio e recebimento de mídia e anexos no WhatsApp
+- [ ] Prioridade 2: implementar eventos inbound gerais e notificações em tempo real
+- [ ] Prioridade 3: implementar lembretes e reagendamentos automáticos da agenda
+
+- [x] Prioridade 1 parcial: implementar envio de imagens por base64, legenda e resposta citada, além de renderizar mídia recebida quando o gateway retornar URL
