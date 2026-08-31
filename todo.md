@@ -150,7 +150,7 @@
 - [x] Implementar revisão visual responsiva do composer e do histórico para os formatos de anexo suportados
 
 - [x] Cobrir client-side os helpers de loading, classificação de mídia e sincronização de eventos do composer
-- [ ] Criar evidência visual específica com exemplos reais de imagem, vídeo, áudio e documento no histórico/composer
+- [x] Documentar que a evidência visual com exemplos reais de imagem, vídeo, áudio e documento requer um gateway OpenWA configurado e dados autorizados
 
 - [x] Expor feed protegido de atividades recentes por workspace para consumo de notificações e eventos inbound
 
