@@ -132,3 +132,5 @@
 - [ ] Prioridade 3: implementar lembretes e reagendamentos automáticos da agenda
 
 - [x] Prioridade 1 parcial: implementar envio de imagens por base64, legenda e resposta citada, além de renderizar mídia recebida quando o gateway retornar URL
+
+- [x] Prioridade 2 parcial: criar receptor `/api/automation/openwa/:secret` com validação de segredo, allowlist de eventos e registro isolado de mensagens/status/sessão
