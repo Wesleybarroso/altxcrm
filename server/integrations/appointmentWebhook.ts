@@ -1,7 +1,8 @@
 import type { Express } from "express";
-import { createAppointment, getWebhookBySecret, updateAppointment } from "../db";
+import { createAppointment, getAppointment, getOpenwaConfig, getWebhookBySecret, updateAppointment } from "../db";
+import { openwaIntegration } from "./openwa";
 
-const allowedEvents = new Set(["appointment.created", "appointment.confirmed", "appointment.updated", "appointment.cancelled"]);
+const allowedEvents = new Set(["appointment.created", "appointment.confirmed", "appointment.updated", "appointment.cancelled", "appointment.reminder", "appointment.rescheduled"]);
 
 type AppointmentWebhookBody = {
   event?: string;
@@ -16,6 +17,8 @@ type AppointmentWebhookBody = {
   endsAt?: string;
   status?: "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show";
   whatsappChatId?: string;
+  whatsappSessionId?: string;
+  message?: string;
   notes?: string;
 };
 
@@ -45,6 +48,38 @@ export function registerAppointmentWebhook(app: Express) {
         await updateAppointment(webhook.ownerId, body.appointmentId, { status: "confirmed" });
         return res.status(200).json({ success: true, appointmentId: body.appointmentId, status: "confirmed" });
       }
+      if (event === "appointment.reminder") {
+        if (!Number.isInteger(body.appointmentId) || !body.appointmentId) return res.status(400).json({ error: "appointmentId is required" });
+        const appointment = await getAppointment(webhook.ownerId, body.appointmentId);
+        if (!appointment) return res.status(404).json({ error: "Appointment not found" });
+        const chatId = cleanString(body.whatsappChatId, 160) ?? appointment.whatsappChatId;
+        const sessionId = cleanString(body.whatsappSessionId, 120) ?? appointment.whatsappSessionId;
+        if (!chatId || !sessionId) return res.status(400).json({ error: "WhatsApp chat and session are required" });
+        const config = await getOpenwaConfig(webhook.ownerId);
+        if (!config) return res.status(503).json({ error: "OpenWA is not configured" });
+        const text = cleanString(body.message, 4096) ?? `Olá, ${appointment.patientName}! Lembrete do seu atendimento de ${appointment.service} em ${new Date(appointment.startsAt).toLocaleString("pt-BR")}.`;
+        await openwaIntegration.sendText(config, sessionId, chatId, text);
+        await updateAppointment(webhook.ownerId, appointment.id, { reminderSentAt: new Date(), whatsappSessionId: sessionId });
+        return res.status(200).json({ success: true, appointmentId: appointment.id, sent: true });
+      }
+      if (event === "appointment.rescheduled") {
+        if (!Number.isInteger(body.appointmentId) || !body.appointmentId) return res.status(400).json({ error: "appointmentId is required" });
+        if (!isValidDate(body.startsAt) || !isValidDate(body.endsAt)) return res.status(400).json({ error: "startsAt and endsAt are required" });
+        const startsAt = new Date(body.startsAt);
+        const endsAt = new Date(body.endsAt);
+        if (endsAt <= startsAt) return res.status(400).json({ error: "endsAt must be after startsAt" });
+        const appointment = await getAppointment(webhook.ownerId, body.appointmentId);
+        if (!appointment) return res.status(404).json({ error: "Appointment not found" });
+        const chatId = cleanString(body.whatsappChatId, 160) ?? appointment.whatsappChatId;
+        const sessionId = cleanString(body.whatsappSessionId, 120) ?? appointment.whatsappSessionId;
+        if (!chatId || !sessionId) return res.status(400).json({ error: "WhatsApp chat and session are required" });
+        const config = await getOpenwaConfig(webhook.ownerId);
+        if (!config) return res.status(503).json({ error: "OpenWA is not configured" });
+        await updateAppointment(webhook.ownerId, appointment.id, { startsAt, endsAt, status: "scheduled", whatsappSessionId: sessionId });
+        const text = cleanString(body.message, 4096) ?? `Olá, ${appointment.patientName}! Seu atendimento de ${appointment.service} foi reagendado para ${startsAt.toLocaleString("pt-BR")}.`;
+        await openwaIntegration.sendText(config, sessionId, chatId, text);
+        return res.status(200).json({ success: true, appointmentId: appointment.id, rescheduled: true });
+      }
       if (event === "appointment.updated") {
         if (!Number.isInteger(body.appointmentId) || !body.appointmentId) return res.status(400).json({ error: "appointmentId is required" });
         const startsAt = isValidDate(body.startsAt) ? new Date(body.startsAt) : undefined;
@@ -56,7 +91,7 @@ export function registerAppointmentWebhook(app: Express) {
       const startsAt = new Date(body.startsAt);
       const endsAt = new Date(body.endsAt);
       if (endsAt <= startsAt) return res.status(400).json({ error: "endsAt must be after startsAt" });
-      const appointmentId = await createAppointment(webhook.ownerId, { patientName: body.patientName!, patientPhone: body.patientPhone, patientEmail: body.patientEmail, service: body.service!, professional: body.professional!, room: body.room, startsAt, endsAt, status: body.status, source: "whatsapp", whatsappChatId: body.whatsappChatId, notes: body.notes });
+      const appointmentId = await createAppointment(webhook.ownerId, { patientName: body.patientName!, patientPhone: body.patientPhone, patientEmail: body.patientEmail, service: body.service!, professional: body.professional!, room: body.room, startsAt, endsAt, status: body.status, source: "whatsapp", whatsappChatId: body.whatsappChatId, whatsappSessionId: body.whatsappSessionId, notes: body.notes });
       return res.status(201).json({ success: true, appointmentId, status: body.status ?? "scheduled" });
     } catch (error) {
       console.error("[AppointmentWebhook] request failed", error);

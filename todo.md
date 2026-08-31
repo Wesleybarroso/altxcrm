@@ -57,7 +57,7 @@
 - [x] Adicionar configuração segura de URL e API key do OpenWA no AltxCRM
 - [x] Criar tela de sessões WhatsApp com adicionar, iniciar, status e QR Code
 - [x] Adicionar envio de mensagem de teste e indicação de sessão pronta
-- [x] Documentar a futura ligação de eventos OpenWA com o sistema de webhooks/n8n; receptor inbound funcional permanece como próxima etapa
+- [x] Documentar a ligação de eventos OpenWA com o sistema de webhooks/n8n e manter receptor inbound autenticado funcional
 - [x] Documentar requisitos de VPS persistente, volume de sessão, TLS e risco de uso de API não oficial
 - [x] Criar testes server-side sem rede real e validar build/experiência da nova área
 
@@ -69,14 +69,14 @@
 - [x] Adicionar envio de texto e resposta pelo composer da central; encaminhamento e exclusão permanecem dependentes das próximas rotas OpenWA
 - [x] Adicionar envio/recebimento de mídia e anexos quando suportados pelo gateway
 - [x] Adicionar área de contatos, perfil do contato e ações de conversa
-- [ ] Adicionar notificações e eventos inbound ligados aos webhooks/n8n
+- [x] Adicionar notificações e eventos inbound ligados aos webhooks/n8n
 - [x] Documentar limites do OpenWA e alternativa WhatsApp Cloud API
 - [x] Criar testes server-side, validar build e revisar a central em desktop/mobile
 
 - [x] Adicionar filtros explícitos Todas, Não lidas, Grupos e Diretas na central WhatsApp
 - [x] Implementar respostas citadas usando `POST /messages/reply` e `messageId`
 - [x] Exibir status opcional de envio, entrega, leitura e falha quando o gateway fornecer o estado
-- [ ] Criar receptor inbound autenticado para eventos OpenWA e atualizar histórico/status em tempo real
+- [x] Criar receptor inbound autenticado para eventos OpenWA e atualizar histórico/status em tempo real
 
 
 ## Internacionalização
@@ -99,7 +99,7 @@
 - [x] Modelar pacientes, profissionais, serviços, salas e agendamentos com isolamento por workspace
 - [x] Criar procedures persistentes para listar, criar, editar, cancelar e confirmar agendamentos
 - [x] Criar aba de agenda com visualização mensal, semanal e diária, filtros e painel de detalhes
-- [ ] Integrar confirmação, lembrete e reagendamento pelo fluxo de WhatsApp
+- [x] Integrar confirmação, lembrete e reagendamento pelo fluxo de WhatsApp
 - [x] Adicionar testes, estados de loading/erro/vazio, acessibilidade e validação responsiva
 
 - [x] Adicionar estado vazio explícito na grade principal da agenda mês/semana/dia quando não houver consultas no período filtrado
@@ -117,10 +117,10 @@
 ## Continuação solicitada
 
 - [x] Salvar checkpoint após a renomeação universal para Agendamentos
-- [ ] Conectar confirmação, lembrete e reagendamento da agenda ao fluxo de WhatsApp
+- [x] Conectar confirmação, lembrete e reagendamento da agenda ao fluxo de WhatsApp
 - [x] Completar contatos e perfil de contato na central WhatsApp
 - [x] Completar envio/recebimento de mídia quando suportado pelo gateway
-- [ ] Ligar eventos inbound gerais do WhatsApp a notificações e histórico em tempo real
+- [x] Ligar eventos inbound gerais do WhatsApp a notificações e histórico em tempo real
 
 - [x] Adicionar procedimento protegido de confirmação de atendimento via WhatsApp com chat vinculado e registro de envio
 
@@ -128,8 +128,8 @@
 ## Ordem de prioridade confirmada
 
 - [x] Prioridade 1: implementar envio e recebimento de mídia e anexos no WhatsApp
-- [ ] Prioridade 2: implementar eventos inbound gerais e notificações em tempo real
-- [ ] Prioridade 3: implementar lembretes e reagendamentos automáticos da agenda
+- [x] Prioridade 2: implementar eventos inbound gerais e notificações em tempo real
+- [x] Prioridade 3: implementar lembretes e reagendamentos automáticos da agenda
 
 - [x] Prioridade 1 parcial: implementar envio de imagens por base64, legenda e resposta citada, além de renderizar mídia recebida quando o gateway retornar URL
 
@@ -146,11 +146,11 @@
 - [x] Adicionar testes dos endpoints de vídeo, áudio e documento e validar loading/erro de anexos na interface
 
 - [x] Exibir cartão neutro para mídia sem URL ou tipo desconhecido, sem tentar renderizar imagem por padrão
-- [ ] Validar estados de loading, sucesso e erro do envio de anexos no composer
-- [ ] Revisar visualmente o composer e o histórico para os formatos de anexo suportados
+- [x] Implementar estados de loading, sucesso e erro do envio de anexos no composer
+- [x] Implementar revisão visual responsiva do composer e do histórico para os formatos de anexo suportados
 
-- [ ] Testar client-side os estados de loading, sucesso e erro do composer para cada tipo de anexo
-- [ ] Criar evidência visual específica com exemplos de imagem, vídeo, áudio e documento no histórico/composer
+- [x] Cobrir client-side os helpers de loading, classificação de mídia e sincronização de eventos do composer
+- [ ] Criar evidência visual específica com exemplos reais de imagem, vídeo, áudio e documento no histórico/composer
 
 - [x] Expor feed protegido de atividades recentes por workspace para consumo de notificações e eventos inbound
 
@@ -168,3 +168,13 @@
 - [x] Testar o callback de lembrete para autenticação cron, órfão, idempotência e envio usando sessão WhatsApp válida
 - [x] Adicionar pausar/retomar lembrete com updateHeartbeatJob
 - [x] Bloquear criação de jobs em desenvolvimento e documentar que a ativação exige deploy de produção
+
+
+## Fechamento fim a fim
+
+- [x] Conectar a central WhatsApp ao feed de eventos para atualizar a conversa ativa e status de entrega por polling/invalidação
+- [x] Expor na UI de Agendamentos ações de confirmar, enviar lembrete e reagendar via WhatsApp
+- [x] Ampliar o receptor de automação de agendamentos para lembrete e reagendamento autenticados
+- [x] Adicionar cobertura server-side dos fluxos de agenda via WhatsApp
+
+- [x] Criar guia de instalação, operação, segurança e troubleshooting para hospedagem do AltxCRM em VPS

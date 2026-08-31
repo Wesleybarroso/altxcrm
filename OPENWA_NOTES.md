@@ -10,7 +10,7 @@ O gateway expõe recursos separados para `sessions`, `messages`, `media`, `conta
 
 Para mensagens, a documentação confirma `POST /sessions/{sessionId}/messages/send-text`, `send-image` e outros envios de mídia. Envio de texto, mídia, reação, resposta, encaminhamento e exclusão usam mensagens endereçadas por `chatId`, com indivíduos no formato `<número>@c.us` e grupos em `<id>@g.us`. Respostas usam `quotedMessageId`; leitura de conversas usa `POST /sessions/{sessionId}/chats/read`, com `chatId` e opcionalmente até 100 `messageIds`.
 
-O SDK e a documentação também indicam que eventos recebidos devem chegar por webhooks assinados, enquanto o painel pode usar polling/leituras paginadas para montar a central. O receptor inbound do AltxCRM ainda precisa ser implementado para persistir mensagens, chats e mídia recebidos.
+O SDK e a documentação também indicam que eventos recebidos devem chegar por webhooks assinados, enquanto o painel pode usar polling/leituras paginadas para montar a central. O receptor inbound do AltxCRM valida segredo, allowlist e workspace, grava o evento no feed de atividades e a central consulta esse feed a cada cinco segundos; quando encontra uma mensagem da sessão e conversa ativas, invalida o histórico e a lista de chats para buscar os dados atualizados no gateway. A persistência canônica do histórico continua no OpenWA, evitando duplicar bytes de mídia no banco do CRM.
 
 O OpenWA é uma interface não oficial/reverse-engineered e não é afiliado à Meta. Deve-se usar número dedicado, opt-in, limites de envio e caminho alternativo com WhatsApp Cloud API para operação crítica.
 
@@ -64,7 +64,7 @@ Para operação crítica, campanhas de maior escala ou requisitos de conformidad
 
 ## Receptor inbound do AltxCRM
 
-O AltxCRM expõe `POST /api/automation/appointments/:secret` para automações autenticadas por um segredo de webhook ativo. Os eventos aceitos são `appointment.created`, `appointment.confirmed`, `appointment.updated` e `appointment.cancelled`. A criação exige `patientName`, `service`, `professional`, `startsAt` e `endsAt`; a origem é gravada como `whatsapp` e o campo `whatsappChatId` vincula a consulta à conversa. O n8n pode chamar esse endpoint após interpretar uma intenção de agendamento, confirmação ou reagendamento.
+O AltxCRM expõe `POST /api/automation/appointments/:secret` para automações autenticadas por um segredo de webhook ativo. Os eventos aceitos são `appointment.created`, `appointment.confirmed`, `appointment.updated`, `appointment.cancelled`, `appointment.reminder` e `appointment.rescheduled`. A criação exige `patientName`, `service`, `professional`, `startsAt` e `endsAt`; a origem é gravada como `whatsapp`, enquanto `whatsappChatId` e `whatsappSessionId` vinculam o atendimento à conversa e à sessão. Os eventos de lembrete e reagendamento recuperam o atendimento dentro do workspace do segredo, enviam a mensagem pela sessão vinculada e atualizam as datas ou timestamps correspondentes. O n8n pode chamar esse endpoint após interpretar uma intenção de agendamento, confirmação, lembrete ou reagendamento.
 
 
 ## Referência OpenWA para mídia
@@ -73,6 +73,10 @@ Fonte: https://raw.githubusercontent.com/rmyndharis/OpenWA/main/docs/06-api-spec
 
 A especificação confirma que a API usa o prefixo `/api`, autenticação por `X-API-Key` e operações de envio exigem papel `OPERATOR`. Os endpoints de mídia aceitam URL ou base64; no caso de base64, o `mimetype` é obrigatório. Há limites de tamanho, validação contra SSRF em URLs, exigência de sessão ativa e possibilidade de resposta 501 quando o engine não suporta a operação. O contrato deve permanecer no transporte server-side, sem expor a API key ao navegador.
 
+
+## Eventos inbound e sincronização da central
+
+O receptor `POST /api/automation/openwa/:secret` aceita `message.received`, `message.sent`, `message.ack`, `message.failed` e `session.updated`. Ele não expõe a chave do OpenWA: usa um segredo separado, valida os eventos configurados no workspace e registra apenas metadados JSON no feed de atividades. A central WhatsApp faz polling protegido desse feed; eventos de `message.*` da conversa ativa invalidam o histórico e a lista de chats, enquanto os estados de entrega permanecem opcionais conforme os campos retornados pelo gateway.
 
 ## Lembretes recorrentes da agenda
 
