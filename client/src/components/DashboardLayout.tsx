@@ -62,7 +62,7 @@ const menuSections = [
     items: [
       { icon: Inbox, label: "Caixa de entrada", path: "/inbox" },
       { icon: MessageCircle, label: "WhatsApp", path: "/whatsapp" },
-      { icon: CalendarDays, label: "Agenda clínica", path: "/appointments" },
+      { icon: CalendarDays, label: "Agendamentos", path: "/appointments" },
       { icon: Clock3, label: "Agendados", path: "/scheduled" },
       { icon: Archive, label: "Arquivo", path: "/archive" },
     ],

@@ -105,3 +105,19 @@
 - [x] Adicionar estado vazio explícito na grade principal da agenda mês/semana/dia quando não houver consultas no período filtrado
 - [x] Validar visualmente a rota /appointments em desktop e mobile no preview autenticado do projeto
 - [x] Revisar acessibilidade básica da agenda: labels, aria-labels, foco de botões e ações principais dos dialogs
+
+
+## Nomenclatura universal da agenda
+
+- [x] Renomear a aba Agenda clínica para uma denominação ampla, adequada a diferentes nichos de atendimento
+- [x] Atualizar os textos visíveis e as traduções PT/EN/ES relacionadas à agenda
+- [x] Validar navegação, build e visual da nova nomenclatura
+
+
+## Continuação solicitada
+
+- [ ] Salvar checkpoint após a renomeação universal para Agendamentos
+- [ ] Conectar confirmação, lembrete e reagendamento da agenda ao fluxo de WhatsApp
+- [ ] Completar contatos e perfil de contato na central WhatsApp
+- [ ] Completar envio/recebimento de mídia quando suportado pelo gateway
+- [ ] Ligar eventos inbound gerais do WhatsApp a notificações e histórico em tempo real
