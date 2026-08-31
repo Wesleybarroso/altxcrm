@@ -70,7 +70,7 @@
 - [ ] Adicionar envio/recebimento de mídia e anexos quando suportados pelo gateway
 - [ ] Adicionar área de contatos, perfil do contato e ações de conversa
 - [ ] Adicionar notificações e eventos inbound ligados aos webhooks/n8n
-- [ ] Documentar limites do OpenWA e alternativa WhatsApp Cloud API
+- [x] Documentar limites do OpenWA e alternativa WhatsApp Cloud API
 - [x] Criar testes server-side, validar build e revisar a central em desktop/mobile
 
 - [x] Adicionar filtros explícitos Todas, Não lidas, Grupos e Diretas na central WhatsApp

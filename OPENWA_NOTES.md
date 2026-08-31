@@ -54,3 +54,14 @@ O endpoint oficial de resposta é `POST /api/sessions/:sessionId/messages/reply`
 
 Fontes: https://docs.open-wa.org/api-reference/message-controller-reply/
 https://docs.open-wa.org/api-reference/webhook-controller-create/
+
+
+## Limites operacionais e alternativa
+
+O OpenWA é adequado para uma primeira operação self-hosted, mas exige uma VPS estável, persistência do perfil de sessão, monitoramento do QR/auth e tratamento de falhas de conexão. A disponibilidade e os campos de mídia/status podem variar entre versões do gateway, portanto a interface deve manter estados opcionais e não assumir que todo evento chegará em tempo real.
+
+Para operação crítica, campanhas de maior escala ou requisitos de conformidade, a alternativa recomendada é a WhatsApp Business Platform / Cloud API oficial da Meta. Ela exige configuração de Business Manager, número aprovado, templates para mensagens iniciadas pela empresa e políticas de opt-in, mas reduz o risco de bloqueio associado a uma interface não oficial. A migração deve preservar o identificador interno da conversa e trocar apenas o transporte.
+
+## Receptor inbound do AltxCRM
+
+O AltxCRM expõe `POST /api/automation/appointments/:secret` para automações autenticadas por um segredo de webhook ativo. Os eventos aceitos são `appointment.created`, `appointment.confirmed`, `appointment.updated` e `appointment.cancelled`. A criação exige `patientName`, `service`, `professional`, `startsAt` e `endsAt`; a origem é gravada como `whatsapp` e o campo `whatsappChatId` vincula a consulta à conversa. O n8n pode chamar esse endpoint após interpretar uma intenção de agendamento, confirmação ou reagendamento.

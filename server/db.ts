@@ -109,6 +109,13 @@ export async function getWebhooks(ownerId: number) {
   return db.select().from(webhooks).where(eq(webhooks.ownerId, ownerId)).orderBy(desc(webhooks.createdAt));
 }
 
+export async function getWebhookBySecret(secret: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db.select().from(webhooks).where(and(eq(webhooks.secret, secret), eq(webhooks.status, "active"))).limit(1);
+  return rows[0];
+}
+
 export async function getWebhookById(ownerId: number, id: number) {
   const db = await getDb();
   if (!db) return undefined;
