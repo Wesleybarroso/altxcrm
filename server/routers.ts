@@ -5,7 +5,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { clearCloudflareApiKey, createAppointment, createDomain, createEmailMessage, createMailbox, createWebhook, createWhatsappSession, deleteAppointment, deleteDomain, deleteMailbox, deleteWebhook, getAppointment, getAppointments, getOpenwaConfig, getWebhookById, getWebhooks, getWhatsappSessions, getWorkspaceSnapshot, hasCloudflareApiKey, hasOpenwaConfig, logActivity, saveCloudflareApiKey, saveOpenwaConfig, saveWorkspaceSettings, updateAppointment, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook, updateWhatsappSession } from "./db";
+import { clearCloudflareApiKey, createAppointment, createDomain, createEmailMessage, createMailbox, createWebhook, createWhatsappSession, deleteAppointment, deleteDomain, deleteMailbox, deleteWebhook, getAppointment, getAppointments, getOpenwaConfig, getRecentActivities, getWebhookById, getWebhooks, getWhatsappSessions, getWorkspaceSnapshot, hasCloudflareApiKey, hasOpenwaConfig, logActivity, saveCloudflareApiKey, saveOpenwaConfig, saveWorkspaceSettings, updateAppointment, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook, updateWhatsappSession } from "./db";
 import { checkMailVpsConnection, mailVpsIntegration } from "./integrations/mailVps";
 import { openwaIntegration } from "./integrations/openwa";
 import { deliverWebhookTest } from "./integrations/webhookDelivery";
@@ -28,6 +28,7 @@ export const appRouter = router({
   }),
   workspace: router({
     snapshot: protectedProcedure.query(({ ctx }) => getWorkspaceSnapshot(ctx.user.id)),
+    activityFeed: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(100).optional() }).optional()).query(({ ctx, input }) => getRecentActivities(ctx.user.id, input?.limit ?? 30)),
     settings: protectedProcedure.query(async ({ ctx }) => (await getWorkspaceSnapshot(ctx.user.id)).settings),
     saveSettings: protectedProcedure.input(z.object({ storageLimitGb: z.number().int().min(50).max(10000).optional(), providerLabel: z.string().max(160).optional(), integrationEndpoint: z.string().max(1024).optional(), mfaRequired: z.number().int().min(0).max(1).optional(), securityAlerts: z.number().int().min(0).max(1).optional(), auditLogEnabled: z.number().int().min(0).max(1).optional() })).mutation(({ ctx, input }) => saveWorkspaceSettings(ctx.user.id, input)),
   }),

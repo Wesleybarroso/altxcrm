@@ -103,6 +103,12 @@ export async function deleteMailbox(ownerId: number, id: number) {
   await logActivity(ownerId, "Caixa postal removida", "mailbox", id);
 }
 
+export async function getRecentActivities(ownerId: number, limit = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(activityLogs).where(eq(activityLogs.ownerId, ownerId)).orderBy(desc(activityLogs.createdAt)).limit(Math.min(Math.max(limit, 1), 100));
+}
+
 export async function getWebhooks(ownerId: number) {
   const db = await getDb();
   if (!db) return [];
