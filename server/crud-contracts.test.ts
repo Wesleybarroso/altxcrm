@@ -2,19 +2,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const dbMocks = vi.hoisted(() => ({
+  createAppointment: vi.fn(),
   createDomain: vi.fn(),
   createEmailMessage: vi.fn(),
   createMailbox: vi.fn(),
   createWebhook: vi.fn(),
+  deleteAppointment: vi.fn(),
   deleteDomain: vi.fn(),
   deleteMailbox: vi.fn(),
   deleteWebhook: vi.fn(),
   getWebhooks: vi.fn(),
   getWebhookById: vi.fn(),
+  getAppointments: vi.fn(),
   getDb: vi.fn(),
   getWorkspaceSnapshot: vi.fn(),
   logActivity: vi.fn(),
   saveWorkspaceSettings: vi.fn(),
+  updateAppointment: vi.fn(),
   updateDomainStatus: vi.fn(),
   updateMailbox: vi.fn(),
   updateMessageFolder: vi.fn(),
@@ -84,6 +88,7 @@ describe("AltxCRM CRUD contracts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     dbMocks.getWorkspaceSnapshot.mockResolvedValue(snapshot);
+    dbMocks.createAppointment.mockResolvedValue(51);
     dbMocks.createDomain.mockResolvedValue(11);
     dbMocks.createMailbox.mockResolvedValue(21);
     dbMocks.createEmailMessage.mockResolvedValue(31);
@@ -133,6 +138,24 @@ describe("AltxCRM CRUD contracts", () => {
     await caller.scheduled.create({ mailboxId: 21, senderEmail: "ops@altx.test", toEmails: ["cliente@example.com"], subject: "Lembrete", body: "Olá", scheduledAt });
     expect(mailMocks.sendMessage).toHaveBeenCalledWith(expect.objectContaining({ scheduledAt: scheduledAt.getTime() }));
     expect(dbMocks.createEmailMessage).toHaveBeenCalledWith(user.id, expect.objectContaining({ scheduledAt, folder: "draft" }));
+  });
+
+  it("cria e confirma uma consulta odontológica com dados de WhatsApp", async () => {
+    const caller = appRouter.createCaller(context(user));
+    const startsAt = new Date("2026-09-03T13:00:00.000Z");
+    const endsAt = new Date("2026-09-03T14:00:00.000Z");
+    await caller.appointments.create({ patientName: "Marina Costa", patientPhone: "5511999999999", service: "Avaliação odontológica", professional: "Dra. Helena Costa", startsAt, endsAt, source: "whatsapp", whatsappChatId: "5511999999999@c.us" });
+    expect(dbMocks.createAppointment).toHaveBeenCalledWith(user.id, expect.objectContaining({ source: "whatsapp", whatsappChatId: "5511999999999@c.us", startsAt, endsAt }));
+    await caller.appointments.createFromWhatsApp({ patientName: "Rafael Lima", service: "Retorno", professional: "Dr. Paulo Mendes", startsAt, endsAt, source: "whatsapp", whatsappChatId: "5511888888888@c.us" });
+    expect(dbMocks.createAppointment).toHaveBeenCalledWith(user.id, expect.objectContaining({ source: "whatsapp", whatsappChatId: "5511888888888@c.us" }));
+    await caller.appointments.confirm({ id: 51 });
+    expect(dbMocks.updateAppointment).toHaveBeenCalledWith(user.id, 51, { status: "confirmed" });
+    await expect(caller.appointments.createFromWhatsApp({ patientName: "Sem chat", service: "Retorno", professional: "Dr. Paulo Mendes", startsAt, endsAt, source: "whatsapp" })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("valida que o horário final seja posterior ao inicial", async () => {
+    const caller = appRouter.createCaller(context(user));
+    await expect(caller.appointments.create({ patientName: "Marina Costa", service: "Avaliação", professional: "Dra. Helena", startsAt: "2026-09-03T14:00:00.000Z", endsAt: "2026-09-03T13:00:00.000Z" })).rejects.toThrow("Appointment end must be after start");
   });
 
   it("cria, atualiza e remove webhook dentro do workspace autenticado", async () => {

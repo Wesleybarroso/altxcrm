@@ -1,6 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, activityLogs, domains, emailMessages, mailboxes, users, webhooks, whatsappSessions, workspaceSettings } from "../drizzle/schema";
+import { InsertUser, appointments, activityLogs, domains, emailMessages, mailboxes, users, webhooks, whatsappSessions, workspaceSettings } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { decryptWorkspaceSecret, encryptWorkspaceSecret } from "./security/secrets";
 
@@ -241,6 +241,41 @@ export async function updateWhatsappSession(ownerId: number, openwaSessionId: st
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   await db.update(whatsappSessions).set({ ...input, lastSyncedAt: new Date() }).where(and(eq(whatsappSessions.ownerId, ownerId), eq(whatsappSessions.openwaSessionId, openwaSessionId)));
+}
+
+export async function getAppointments(ownerId: number, range?: { from?: Date; to?: Date }) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(appointments.ownerId, ownerId)];
+  if (range?.from) conditions.push(gte(appointments.startsAt, range.from));
+  if (range?.to) conditions.push(lte(appointments.startsAt, range.to));
+  return db.select().from(appointments).where(and(...conditions)).orderBy(appointments.startsAt);
+}
+
+export async function createAppointment(ownerId: number, input: { patientName: string; patientPhone?: string; patientEmail?: string; service: string; professional: string; room?: string; startsAt: Date; endsAt: Date; status?: "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show"; source?: "manual" | "whatsapp"; whatsappChatId?: string; notes?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  if (input.endsAt <= input.startsAt) throw new Error("Appointment end must be after start");
+  const result = await db.insert(appointments).values({ ownerId, patientName: input.patientName.trim(), patientPhone: input.patientPhone?.trim() || null, patientEmail: input.patientEmail?.trim() || null, service: input.service.trim(), professional: input.professional.trim(), room: input.room?.trim() || null, startsAt: input.startsAt, endsAt: input.endsAt, status: input.status ?? "scheduled", source: input.source ?? "manual", whatsappChatId: input.whatsappChatId?.trim() || null, notes: input.notes?.trim() || null });
+  const id = Number(result[0].insertId);
+  await logActivity(ownerId, "Agendamento criado", "appointment", id, `${input.patientName} · ${input.service}`);
+  return id;
+}
+
+export async function updateAppointment(ownerId: number, id: number, input: { patientName?: string; patientPhone?: string | null; patientEmail?: string | null; service?: string; professional?: string; room?: string | null; startsAt?: Date; endsAt?: Date; status?: "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show"; notes?: string | null; confirmationSentAt?: Date | null; reminderSentAt?: Date | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  if (input.startsAt && input.endsAt && input.endsAt <= input.startsAt) throw new Error("Appointment end must be after start");
+  const values = { ...input, patientName: input.patientName?.trim(), service: input.service?.trim(), professional: input.professional?.trim(), patientPhone: input.patientPhone?.trim() || input.patientPhone, patientEmail: input.patientEmail?.trim() || input.patientEmail, room: input.room?.trim() || input.room, notes: input.notes?.trim() || input.notes };
+  await db.update(appointments).set(values).where(and(eq(appointments.id, id), eq(appointments.ownerId, ownerId)));
+  await logActivity(ownerId, "Agendamento atualizado", "appointment", id, input.status ? `Status: ${input.status}` : undefined);
+}
+
+export async function deleteAppointment(ownerId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(appointments).set({ status: "cancelled" }).where(and(eq(appointments.id, id), eq(appointments.ownerId, ownerId)));
+  await logActivity(ownerId, "Agendamento cancelado", "appointment", id);
 }
 
 export async function logActivity(ownerId: number, action: string, resourceType: string, resourceId?: number, detail?: string) {

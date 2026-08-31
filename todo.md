@@ -81,14 +81,27 @@
 
 ## Internacionalização
 
-- [ ] Auditar textos fixos, labels, placeholders, mensagens e estados que permanecem em português após a troca de idioma
-- [ ] Corrigir componentes para usar o idioma selecionado de forma consistente
-- [ ] Validar troca de idioma nas rotas principais e adicionar ou atualizar testes relevantes
+- [x] Auditar textos fixos, labels, placeholders, mensagens e estados que permanecem em português após a troca de idioma
+- [x] Corrigir componentes para usar o idioma selecionado de forma consistente
+- [x] Validar troca de idioma nas rotas principais e adicionar ou atualizar testes relevantes
 
 
 ## Correção da auditoria de internacionalização
 
-- [ ] Substituir a mutação de DOM por uma camada i18n real nos componentes e remover os principais textos hardcoded
-- [ ] Cobrir DashboardLayout, AppTopBar, Settings, Home, WhatsApp e demais rotas com strings traduzidas, incluindo toasts, placeholders, acessibilidade e estados
-- [ ] Validar manualmente a troca de idioma nas rotas autenticadas principais
+- [x] Substituir a mutação de DOM por uma camada i18n real nos componentes e remover os principais textos hardcoded
+- [x] Cobrir DashboardLayout, AppTopBar, Settings, Home, WhatsApp e demais rotas com strings traduzidas, incluindo toasts, placeholders, acessibilidade e estados
+- [x] Validar manualmente a troca de idioma nas rotas autenticadas principais
 - [x] Ajustar a configuração do Vitest para executar testes client-side de i18n
+
+
+## Agenda odontológica integrada ao WhatsApp
+
+- [x] Modelar pacientes, profissionais, serviços, salas e agendamentos com isolamento por workspace
+- [x] Criar procedures persistentes para listar, criar, editar, cancelar e confirmar agendamentos
+- [x] Criar aba de agenda com visualização mensal, semanal e diária, filtros e painel de detalhes
+- [ ] Integrar confirmação, lembrete e reagendamento pelo fluxo de WhatsApp
+- [x] Adicionar testes, estados de loading/erro/vazio, acessibilidade e validação responsiva
+
+- [x] Adicionar estado vazio explícito na grade principal da agenda mês/semana/dia quando não houver consultas no período filtrado
+- [x] Validar visualmente a rota /appointments em desktop e mobile no preview autenticado do projeto
+- [x] Revisar acessibilidade básica da agenda: labels, aria-labels, foco de botões e ações principais dos dialogs

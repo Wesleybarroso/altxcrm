@@ -29,6 +29,13 @@
       "when": 1787901161362,
       "tag": "0003_friendly_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1788207523504,
+      "tag": "0004_slippery_mandroid",
+      "breakpoints": true
     }
   ]
 }

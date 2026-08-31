@@ -24,6 +24,7 @@ import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import {
   Archive,
+  CalendarDays,
   Clock3,
   ChevronDown,
   CircleHelp,
@@ -61,6 +62,7 @@ const menuSections = [
     items: [
       { icon: Inbox, label: "Caixa de entrada", path: "/inbox" },
       { icon: MessageCircle, label: "WhatsApp", path: "/whatsapp" },
+      { icon: CalendarDays, label: "Agenda clínica", path: "/appointments" },
       { icon: Clock3, label: "Agendados", path: "/scheduled" },
       { icon: Archive, label: "Arquivo", path: "/archive" },
     ],

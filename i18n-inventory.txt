@@ -1,0 +1,516 @@
+ Ative o workflow e teste pelo AltxCRM.<
+ Crie um Webhook node no n8n.<
+ Dados sincronizados agora<
+ Minha conta<
+ Preferências<
+ Sair do painel<
+ Use POST e copie a Production URL.<
+ activeChatId && markChatReadMutation.mutate({ sessionId: activeSessionId, chatId: activeChatId })} disabled={!activeChatId || markChatReadMutation.isPending} className="h-8 text-xs text-[#9fc5a9] hover:bg-[#183b38] hover:text-[#c8ff4f]">Marcar como lida<
+ cancel(item.id)} className="h-9 w-9 text-[#72998b] hover:bg-[#3a2528] hover:text-[#ff9b91]" aria-label="Cancelar agendamento"><
+ choose(message)} className={`group flex w-full gap-3 border-b border-[#193633] px-5 py-4 text-left transition-colors ${selected?.id === message.id ? "bg-[#153531]" : "hover:bg-[#102b29]"}`}><
+ document.getElementById(configured ? "whatsapp-session-name" : "openwa-base-url")?.focus()} actionDisabled={saveConfigMutation.isPending} /><
+ item.status === "Ativa").length.toString().padStart(2, "0")}<
+ item.status === "Ativo").length.toString().padStart(2, "0")}<
+ item.status === "Verificado").length}<
+ item.status === "active").length} ativas` : "22 ativas · 2 suspensas"} icon={AtSign} tone="teal" /><
+ item.status === "verified").length} verificados` : "Todos verificados"} icon={Globe2} /><
+ message.unread).length}<
+ openEdit(item)} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label={`Editar ${item.email}`}><
+ remove(item.email)} className="h-9 w-9 text-[#72998b] hover:bg-[#3a2528] hover:text-[#ff9b91]" aria-label={`Excluir ${item.email}`}><
+ remove(item.id)} className="h-9 w-9 text-[#72998b] hover:bg-[#3a2528] hover:text-[#ff9b91]" aria-label="Remover integração"><
+ removeDomain(item.domain)} className="h-9 w-9 text-[#72998b] hover:bg-[#3a2528] hover:text-[#ff9b91]" aria-label={`Remover ${item.domain}`}><
+ section.items).find(item => item.path === location)?.label || "AltxCRM")}<
+ session.status === "ready").length.toString().padStart(2, "0")}<
+ setApiKey(event.target.value)} placeholder={configured ? "API key cadastrada · substituir" : "X-API-Key do OpenWA"} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" aria-label="API key do OpenWA" /><
+ setBaseUrl(event.target.value)} placeholder="https://whatsapp.seudominio.com" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" aria-label="URL do gateway OpenWA" /><
+ setCentralText(event.target.value)} placeholder={activeChatId ? "Escreva uma resposta…" : "Selecione uma conversa…"} disabled={!activeChatId || currentStatus !== "ready"} className="min-h-10 max-h-32 resize-none border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setChatFilter("all")} className={`rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.14em] transition-colors ${chatFilter === "all" ? "border-[#c8ff4f] bg-[#19372f] text-[#c8ff4f]" : "border-[#31554d] text-[#72998b] hover:border-[#638c7e]"}`}>Todas<
+ setChatFilter("direct")} className={`rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.14em] transition-colors ${chatFilter === "direct" ? "border-[#c8ff4f] bg-[#19372f] text-[#c8ff4f]" : "border-[#31554d] text-[#72998b] hover:border-[#638c7e]"}`}>Diretas<
+ setChatFilter("groups")} className={`rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.14em] transition-colors ${chatFilter === "groups" ? "border-[#c8ff4f] bg-[#19372f] text-[#c8ff4f]" : "border-[#31554d] text-[#72998b] hover:border-[#638c7e]"}`}>Grupos<
+ setChatFilter("unread")} className={`rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.14em] transition-colors ${chatFilter === "unread" ? "border-[#c8ff4f] bg-[#19372f] text-[#c8ff4f]" : "border-[#31554d] text-[#72998b] hover:border-[#638c7e]"}`}>Não lidas<
+ setChatId(event.target.value)} placeholder="5511999999999@c.us" disabled={currentStatus !== "ready"} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setChatSearch(event.target.value)} placeholder="Buscar conversa ou número" className="h-10 border-[#3d6958] bg-[#0a1b1e] pl-9 text-[#eaf5e8] placeholder:text-[#4f7568]" aria-label="Buscar conversas" /><
+ setCloudflareKey(event.target.value)} placeholder={cloudflareStatusQuery.data?.configured ? "Chave cadastrada · digite para substituir" : "Cole sua chave API do Cloudflare"} className="h-10 min-w-0 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568] sm:w-80 lg:flex-1" aria-label="Chave API do Cloudflare" /><
+ setCompose({ ...compose, body: event.target.value })} placeholder="Escreva sua mensagem..." className="min-h-40 border-[#3d6958] bg-[#0a1b1e] text-sm leading-6 text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setCompose({ ...compose, subject: event.target.value })} placeholder="Assunto da mensagem" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setCompose({ ...compose, to: event.target.value })} placeholder="destinatario@empresa.com" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setComposeOpen(false)} className="text-[#87a99a] hover:bg-[#183b38]">Cancelar<
+ setComposeOpen(true)} /><
+ setDialogOpen(false)} className="text-[#87a99a] hover:bg-[#183b38]">Cancelar<
+ setFilter(item)} className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs transition-colors ${filter === item ? "bg-[#c8ff4f] font-bold text-[#112119]" : "text-[#86a99a] hover:bg-[#183b38]"}`}>{item}{item === "Não lidos" && <
+ setForm({ ...form, date: event.target.value })} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8]" /><
+ setForm({ ...form, email: event.target.value })} placeholder="nome@empresa.com.br" className="h-11 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568] disabled:opacity-60" /><
+ setForm({ ...form, events: form.events.includes(event) ? form.events.filter((value) => value !== event) : [...form.events, event] })} className={`rounded-full border px-2.5 py-1.5 text-[10px] transition-colors ${form.events.includes(event) ? "border-[#9edc6f] bg-[#19372f] text-[#c8ff4f]" : "border-[#31584e] bg-[#102b29] text-[#7ea295]"}`}>{event}<
+ setForm({ ...form, name: event.target.value })} placeholder="Ex.: Slack · Alertas" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setForm({ ...form, name: event.target.value })} placeholder="Nome da pessoa ou equipe" className="h-11 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setForm({ ...form, quota: event.target.value })} className="h-11 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8]" /><
+ setForm({ ...form, recipient: event.target.value })} placeholder="equipe@empresa.com.br" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setForm({ ...form, subject: event.target.value })} placeholder="Assunto do envio" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setForm({ ...form, time: event.target.value })} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8]" /><
+ setForm({ ...form, url: event.target.value })} placeholder="https://sua-ferramenta.com/webhook" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setLocation("/archive")} variant="ghost" className="mt-6 h-9 w-full text-xs text-[#86ab9c] hover:bg-[#183b38] hover:text-[#c8ff4f]">Ver histórico de atividades <
+ setLocation("/inbox")} className="group flex w-full items-center gap-3 border-b border-[#193633] px-5 py-4 text-left transition-colors last:border-0 hover:bg-[#102b29] sm:px-6"><
+ setLocation("/inbox")} variant="ghost" className="h-9 text-xs text-[#a9d49a] hover:bg-[#183b38] hover:text-[#c8ff4f]">Ver caixa completa <
+ setLocation("/settings")} variant="outline" className="action-button h-10 w-full border-[#3c6955] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">Ajustar capacidade <
+ setMessage(event.target.value)} placeholder="Mensagem de teste…" disabled={currentStatus !== "ready"} className="min-h-24 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setN8nUrl(event.target.value)} placeholder="https://n8n.seudominio.com/webhook/altxcrm" aria-label="Production URL do n8n" className="h-10 min-w-0 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setNewDomain(event.target.value)} placeholder="empresa.com.br" className="h-11 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setOpen(false)} className="text-[#87a99a] hover:bg-[#183b38]">Cancelar<
+ setOpen(true)} /><
+ setProvider(event.target.value)} className="w-full bg-transparent text-sm text-[#dcebdd] outline-none"><
+ setQuery(event.target.value)} placeholder="Buscar eventos" className="h-9 w-full rounded-md border border-[#31584e] bg-[#0a1b1e] pl-9 pr-3 text-xs text-[#eaf5e8] outline-none placeholder:text-[#547568] focus:ring-1 focus:ring-[#c8ff4f]" /><
+ setQuery(event.target.value)} placeholder="Buscar mensagens" className="h-10 border-[#31584e] bg-[#0a1b1e] pl-9 text-xs text-[#eaf5e8] placeholder:text-[#547568]" /><
+ setQuery(event.target.value)} placeholder="Buscar por nome ou e-mail" className="h-9 border-[#31584e] bg-[#0a1b1e] pl-9 text-xs text-[#eaf5e8] placeholder:text-[#547568]" /><
+ setRange("30 dias")} className={`rounded-md px-3 py-1.5 text-xs ${range === "30 dias" ? "bg-[#c8ff4f] font-bold text-[#112119]" : "text-[#87a89a]"}`}>30 dias<
+ setRange("7 dias")} className={`rounded-md px-3 py-1.5 text-xs ${range === "7 dias" ? "bg-[#c8ff4f] font-bold text-[#112119]" : "text-[#87a89a]"}`}>7 dias<
+ setSessionName(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} placeholder="nome-da-sessao" disabled={!configured} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /><
+ setStorage(Number(event.target.value))} className="mt-6 h-1.5 w-full accent-[#c8ff4f]" /><
+ start()} /><
+ start(item)} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Editar integração"><
+ startLogin()} className="action-button mt-8 h-12 w-full rounded-lg bg-[#c8ff4f] font-bold text-[#112119] hover:bg-[#d9ff80]">{t("Continuar com Google / OAuth")}<
+ startLogin()} className="h-10 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">{t("Criar conta")}<
+ startLogin()} className="h-10 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">{t("Esqueci a senha")}<
+ testConnectionMutation.mutate()} disabled={!configured || testConnectionMutation.isPending} className="h-7 px-2 text-xs text-[#a9d398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><
+ testWebhookMutation.mutate({ id: item.id }, { onSuccess: () => toast.success("Webhook respondeu com sucesso."), onError: () => toast.error("O teste do webhook falhou.") })} className="h-9 text-xs text-[#a9d49a] hover:bg-[#183b38] hover:text-[#c8ff4f]"><
+ toast.info("A documentação do payload será gerada com a conexão da VPS.")} variant="ghost" className="mt-5 h-9 px-0 text-xs text-[#abd398] hover:bg-transparent hover:text-[#c8ff4f]">Ver documentação do payload <
+ toast.info("As informações da conta são gerenciadas pelo provedor OAuth.")} /><
+ toast.info("As políticas serão aplicadas à camada segura do servidor.")} variant="ghost" className="mt-5 h-9 text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">Revisar políticas <
+ toast.info("Busca avançada disponível após conectar a infraestrutura da VPS.")} variant="outline" className="mt-5 border-[#3c6955] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><
+ toast.info("Editor de agendamento aberto.")} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Editar agendamento"><
+ toast.info("Envio de mídia será conectado à rota media do OpenWA.")} aria-label="Anexar mídia"><
+ toast.info("Políticas avançadas disponíveis na camada segura.")} /><
+ toast.info("Preferências de envio prontas para conectar à VPS.")} /><
+ toast.info("Rascunho salvo automaticamente.")} className="text-[#87a99a] hover:bg-[#183b38]"><
+ toast.info("Segmentação será conectada à sua camada de dados.")} variant="outline" className="mt-5 border-[#3c6955] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><
+ toast.success("Exportação preparada. Você receberá o arquivo em instantes.")} /><
+ toast.success("Link de redefinição enviado para o e-mail do administrador.")} variant="outline" className="mt-5 border-[#3c6955] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><
+ toast.success("Link seguro para redefinição gerado.")} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Redefinir senha"><
+ toast.success("Mensagem marcada com estrela.")} className="h-9 w-9 text-[#789b8d] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Favoritar"><
+ toast.success("Sincronização iniciada.")} className="action-button h-9 border-[#3c6955] bg-transparent text-xs text-[#a9d49a] hover:bg-[#183b38] hover:text-[#c8ff4f]"><
+ toast.success("Todos os endpoints ativos foram testados.")} className="action-button h-9 border-[#3c6955] bg-transparent text-xs text-[#a9d49a] hover:bg-[#183b38] hover:text-[#c8ff4f]"><
+ toggle(item.email)} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label={`Suspender ${item.email}`}><
+ toggle(item.id)} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Pausar integração"><
+ total + item.quota, 0)} <
+ utils.whatsapp.sessions.list.invalidate()} disabled={!configured} className="h-9 border-[#3c6955] bg-transparent text-xs text-[#a9d49a] hover:bg-[#183b38] hover:text-[#c8ff4f]"><
+ verifyDomain(item.domain)} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label={`Verificar ${item.domain}`}><
+ void }) { return <
+ window.location.assign("/integrations")} variant="outline" className="mt-5 border-[#3c6955] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">Abrir integrações <
+ à sua operação.<
+A URL e a API key são enviadas apenas pelo backend. Use HTTPS em produção e mantenha o volume de sessões do OpenWA persistente.<
+A camada de integração mantém o painel separado da infraestrutura e expõe apenas operações autorizadas para domínios, caixas e mensagens.<
+A list of your recent invoices.<
+AI ChatBox<
+ALTXCRM<
+Accent<
+Accept terms and conditions<
+Accordion<
+Account<
+Acesso e proteção<
+Acesso seguro<
+Add to library<
+Adicionado {item.added}<
+Adicionar domínio<
+Adicionar n8n<
+Adicione uma única chave API para preparar a automação dos registros de e-mail. O valor é criptografado no servidor e nunca volta para o navegador.<
+Agendar e-mail<
+Agendar envio<
+Airplane Mode<
+Ajuste o limite total reservado para as caixas postais e o arquivo.<
+Ajuste o sistema ao <
+Alerts<
+Alternar navegação
+AltxCRM · Mail operations workspace<
+Ambiente conectado<
+Amount<
+An unexpected error occurred.<
+Anexar arquivo<
+Apple<
+Are you absolutely sure?<
+Armazenamento do workspace<
+Armazenamento<
+Arquivar
+Aspect Ratio (16/9)<
+Assinatura HMAC<
+Assunto<
+Ativa<
+Atividades recentes<
+Ativo<
+Atualizar<
+Automatize o fluxo sem copiar segredos.<
+Avatar<
+Background<
+Badges<
+Banana<
+Bank Transfer<
+Billing<
+Breadcrumb<
+Busca avançada<
+Buttons<
+Cada endereço com <
+Cada envio registra horário, remetente, destinatários e o resultado da entrega na trilha de atividades.<
+Cadastre um endpoint HTTPS para receber eventos do AltxCRM.<
+Caixas / uso<
+Caixas postais<
+Calendar<
+Cancel<
+Cancelar resposta
+Card<
+Carousel<
+Carregando histórico…<
+Close<
+Cloudflare / API key<
+Cole a Production URL do seu Webhook node. O AltxCRM cria o endpoint com eventos iniciais e gera o segredo HMAC no backend.<
+Collapsible<
+Color Combinations<
+Combine caixas postais, aliases e listas para organizar os próximos disparos da operação.<
+Comece pelo domínio que você quer conectar ao servidor de e-mail.<
+Conectadas<
+Conecte a API da sua VPS para ativar a operação real.<
+Conecte a API da sua VPS.<
+Conecte e autentique uma sessão OpenWA para carregar suas conversas.<
+Conecte seu primeiro fluxo.<
+Conecte sua conta de DNS.<
+Conexão com a VPS<
+Consulta sem atrito.<
+Contas ativas<
+Conversa selecionada<
+Conversas conectadas ao <
+Conversas<
+Cota de armazenamento (GB)<
+Cota total<
+Credenciais armazenadas no backend<
+Credit Card<
+Criar<
+Current password<
+DNS sem adivinhação.<
+Dados sob sua política.<
+Data Display<
+Data<
+Date Time Picker<
+Default<
+Defina a identidade e o espaço reservado para esta conta.<
+Defina retenção, exportação e acesso ao histórico conforme os requisitos da sua operação.<
+Depois de adicionar um domínio, publique os registros abaixo no seu provedor. A verificação acontece automaticamente.<
+Destinatários<
+Destructive<
+Dimensions<
+Displays the mobile sidebar.<
+Domínios que dão <
+Dropdown Menu<
+E-mails programados<
+Edit profile<
+Edit<
+Email
+Email<
+Encaminhar<
+Endereço de e-mail<
+Endpoint HTTPS<
+Endpoint de integração<
+Endpoints ativos<
+Entrada<
+Entradas e saídas consolidadas<
+Entregas / 24h<
+Enviar agora<
+Enviar mensagem
+Envie eventos de entrada e saída para as ferramentas que sua equipe já usa.<
+Envie para as pessoas certas.<
+Envie uma mensagem controlada.<
+Envios com rastreabilidade.<
+Error<
+Escolha o destino e o momento em que a mensagem deve sair.<
+Escolha o sinal certo.<
+Escreva, envie agora ou transforme em um e-mail agendado.<
+Eventos inscritos<
+Eventos registrados<
+Eventos<
+Excluir
+Fila processada pela infraestrutura da VPS<
+File<
+Filtrar eventos
+Force Reload<
+Form Inputs<
+Gerenciar segmentos<
+Ghost<
+Go to next page
+Go to previous page
+Heads up!<
+Home<
+Horário<
+Hover Card<
+Hover me<
+INV001<
+INV002<
+INV003<
+Infraestrutura clara para <
+Iniciar<
+Input OTP<
+Input<
+Integrações sem expor credenciais.<
+Integridade<
+Invoice<
+Is it accessible?<
+Is it animated?<
+Is it styled?<
+Large<
+Layout Components<
+Leia, acompanhe e responda conversas da sessão conectada em tempo real.<
+Link<
+Loading
+MFA recomendado para admins<
+MM
+Mail operations<
+Mais opções
+Mantenha as áreas internas protegidas com políticas claras para o workspace.<
+Mensagem anterior
+Mensagens em ordem, <
+Mensagens em um único fluxo.<
+Mensagens recentes<
+Menubar<
+Menus<
+Message<
+Method<
+More pages<
+More<
+Movimento do workspace<
+Muted<
+My Account<
+Name<
+Nenhum evento encontrado.<
+Nenhum registro de {label} foi persistido ainda.<
+Nenhuma conversa encontrada nesta sessão.<
+Nenhuma mensagem encontrada.<
+Nenhuma mensagem retornada pelo OpenWA.<
+New Tab<
+New Window<
+New password<
+Newsletter — novidades do mês<
+Next slide<
+Next<
+No framework found<
+No telefone: WhatsApp → Configurações → Aparelhos conectados → Conectar aparelho.<
+Nome de exibição<
+Nome do domínio<
+Nome<
+Notificações
+Nova mensagem<
+Não foi possível carregar {label}. Verifique a conexão do backend e tente novamente.<
+Números vinculados.<
+O AltxCRM valida o DNS antes de liberar novas caixas postais para este domínio.<
+O arquivo preserva o contexto das conversas e mantém as mensagens acessíveis para auditorias e decisões futuras.<
+O gateway precisa permanecer ativo na VPS para manter a sessão do WhatsApp, o QR Code e os eventos recebidos.<
+O próximo envio já tem <
+O seu e-mail, conectado ao <
+Open Dialog<
+Open Drawer<
+Open Popover<
+Open Sheet<
+OpenWA é uma API comunitária não oficial. Use um número dedicado, mantenha o gateway com TLS, volume persistente e limites de envio; para operações reguladas ou críticas, considere a API oficial do WhatsApp Cloud API.<
+Option One<
+Option Two<
+Orange<
+Os endpoints recebem apenas os eventos explicitamente selecionados, com payload versionado e assinatura de integridade.<
+Os segredos ficam no backend, os requests saem pela camada de integração e cada entrega pode ser reprocessada com segurança.<
+Outline<
+Overlays<
+Pagination<
+Paid<
+Panel One<
+Panel Two<
+Para<
+Password<
+PayPal<
+Pendente<
+Pending<
+Permissões por função.<
+Pesquisar
+Plano Professional<
+Políticas ativas<
+Popover<
+Precisa de ajuda?<
+Previous slide<
+Previous<
+Primary<
+Print<
+Profile<
+Programados<
+Progress<
+Próxima mensagem
+Próximo envio<
+Radio Group<
+Redefinir minha senha<
+Redefinição segura habilitada<
+Redo<
+Registro contínuo<
+Reload<
+Remover<
+Resizable Panels<
+Respondendo:<
+Responder<
+Retenção<
+Right Click Me<
+Roteamento<
+Save changes<
+Save password<
+Saída<
+Scroll Area<
+Search frameworks...
+Searchable Dropdown<
+Secondary<
+Segurança<
+Selecione uma conversa para ler o histórico.<
+Selecione uma mensagem.<
+Select a fruit
+Select date and time<
+Select<
+Sessões<
+Settings<
+Seus domínios<
+Shadcn/ui Component Showcase<
+Share<
+Sidebar<
+Sincronizando conversas…<
+Sincronizando {label}…<
+Sincronizar DNS<
+Skeleton<
+Slider<
+Small<
+Sonner Toast<
+Status DNS<
+Status<
+Submit<
+Subscription<
+Suspensa<
+TLS obrigatório<
+Table<
+Tabs<
+Taxa de entrega<
+Team<
+Test Input<
+Testar todos<
+Testar<
+Text Colors<
+Toast<
+Toggle Group<
+Toggle Sidebar
+Toggle Sidebar<
+Toggle bold
+Toggle italic
+Toggle underline
+Toggle<
+Total conectado<
+Try sending a message...
+Tudo que aconteceu, <
+Type something...
+Type your message here.
+Um novo segredo será gerado e armazenado somente no servidor.<
+Um número por sessão.<
+Undo<
+Unpaid<
+Use endereços individuais para pessoas e aliases para fluxos de equipe. A política de senha pode ser reforçada por domínio.<
+Use o formato internacional sem `+` ou espaços, terminando com `@c.us`.<
+Uso atual<
+VPS Altx · Homologação<
+VPS Altx · Produção<
+Verificado<
+Verificação segura<
+View<
+Voltar
+Webhooks conectados<
+YYYY
+api.altx.io/v1/mail<
+breadcrumb
+de {displayMailboxes.length} caixas postais<
+decisões em movimento.<
+dias<
+distribuídos por conta<
+div]:bg-[#83c986]" /><
+div]:bg-[#c8ff4f]" /><
+domínios no workspace<
+domínios verificados<
+em contexto.<
+endereço<
+envios aguardando execução<
+espaço e contexto.<
+hora marcada.<
+mensagens que importam.<
+mx.altx.io<
+média dos últimos 30 dias<
+n8n / Webhook node<
+nos últimos 30 dias<
+pagination
+para AltxCRM · {selected.email}<
+política do workspace<
+recebendo eventos<
+restante da operação.<
+ritmo da operação.<
+segredos isolados por endpoint<
+servidor de entrada principal<
+seu ritmo.<
+smtp.altx.io<
+toast.error("API da VPS não configurada ou indisponível.
+toast.error("Adicione e verifique um domínio antes de criar uma caixa.
+toast.error("Agendamento indisponível: conecte a API segura da VPS nas configurações.
+toast.error("Cole a Production URL HTTPS do Webhook node.
+toast.error("Crie uma caixa postal antes de agendar mensagens.
+toast.error("Crie uma caixa postal antes de enviar mensagens.
+toast.error("Envio indisponível: conecte a API segura da VPS nas configurações.
+toast.error("Informe a URL HTTPS e a API key do OpenWA.
+toast.error("Informe destinatário, assunto e mensagem.
+toast.error("Informe um domínio válido.
+toast.error("Informe uma chave API válida.
+toast.error("Não foi possível arquivar a mensagem.
+toast.error("Não foi possível atualizar o status.
+toast.error("Não foi possível atualizar o webhook.
+toast.error("Não foi possível cancelar o agendamento.
+toast.error("Não foi possível conectar ao OpenWA.
+toast.error("Não foi possível criar a caixa postal na infraestrutura.
+toast.error("Não foi possível criar o webhook.
+toast.error("Não foi possível excluir a mensagem.
+toast.error("Não foi possível iniciar a sessão.
+toast.error("Não foi possível persistir o domínio. Verifique a configuração do servidor.
+toast.error("Não foi possível remover a chave API.
+toast.error("Não foi possível remover a integração.
+toast.error("Não foi possível remover o domínio da VPS.
+toast.error("Não foi possível salvar a chave API.
+toast.error("Não foi possível verificar o domínio na VPS.
+toast.error("O OpenWA ainda não disponibilizou um QR Code.
+toast.error("Preencha nome e e-mail.
+toast.error("Preencha todos os campos do agendamento.
+toast.error("Selecione uma conversa e escreva uma mensagem.
+toast.error("Selecione uma sessão e informe destinatário e mensagem.
+toast.error("Use de 3 a 50 caracteres: letras minúsculas, números ou hífen.
+toast.error("Use um nome e uma URL HTTPS válida.
+toast.info("Conecte a API da VPS para cancelar este agendamento.
+toast.info("Conecte a caixa de entrada à VPS para arquivar esta mensagem.
+toast.info("Conecte a caixa de entrada à VPS para excluir esta mensagem.
+toast.info("Conecte a área de integrações ao backend para remover este endpoint.
+toast.success("Agendamento cancelado.
+toast.success("Caixa postal atualizada.
+toast.success("Caixa postal enviada para criação.
+toast.success("Chave API do Cloudflare protegida no workspace.
+toast.success("Chave API removida.
+toast.success("Conexão verificada com a API da VPS.
+toast.success("Domínio persistido. Siga as instruções de DNS para verificar.
+toast.success("Domínio removido do workspace.
+toast.success("E-mail agendado na infraestrutura.
+toast.success("Exclusão da caixa postal enviada para a infraestrutura.
+toast.success("Gateway OpenWA protegido no workspace.
+toast.success("Integração atualizada.
+toast.success("Integração removida.
+toast.success("Mensagem arquivada.
+toast.success("Mensagem encaminhada ao OpenWA.
+toast.success("Mensagem enviada com sucesso.
+toast.success("Mensagem movida para a lixeira.
+toast.success("OpenWA respondeu com sucesso.
+toast.success("Preferências salvas com segurança.
+toast.success("Resposta citada enviada.
+toast.success("Segredo mascarado copiado.
+toast.success("Sessão criada no OpenWA.
+toast.success("Status da caixa postal enviado para a infraestrutura.
+toast.success("Status da integração atualizado.
+toast.success("Valor DNS copiado.
+toast.success("Webhook criado com segredo exclusivo.
+Última entrega<
+Última sincronização há 4 min<
+Últimos eventos<
+última verificação agora<

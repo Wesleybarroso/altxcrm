@@ -83,6 +83,27 @@ export const whatsappSessions = mysqlTable("whatsappSessions", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const appointments = mysqlTable("appointments", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull().references(() => users.id),
+  patientName: varchar("patientName", { length: 160 }).notNull(),
+  patientPhone: varchar("patientPhone", { length: 40 }),
+  patientEmail: varchar("patientEmail", { length: 320 }),
+  service: varchar("service", { length: 160 }).notNull(),
+  professional: varchar("professional", { length: 160 }).notNull(),
+  room: varchar("room", { length: 80 }),
+  startsAt: timestamp("startsAt").notNull(),
+  endsAt: timestamp("endsAt").notNull(),
+  status: mysqlEnum("status", ["scheduled", "confirmed", "completed", "cancelled", "no_show"]).default("scheduled").notNull(),
+  source: mysqlEnum("source", ["manual", "whatsapp"]).default("manual").notNull(),
+  whatsappChatId: varchar("whatsappChatId", { length: 160 }),
+  confirmationSentAt: timestamp("confirmationSentAt"),
+  reminderSentAt: timestamp("reminderSentAt"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const activityLogs = mysqlTable("activityLogs", {
   id: int("id").autoincrement().primaryKey(),
   ownerId: int("ownerId").notNull().references(() => users.id),
@@ -115,5 +136,7 @@ export type Mailbox = typeof mailboxes.$inferSelect;
 export type EmailMessage = typeof emailMessages.$inferSelect;
 export type Webhook = typeof webhooks.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
+export type Appointment = typeof appointments.$inferSelect;
+export type InsertAppointment = typeof appointments.$inferInsert;
 export type WorkspaceSettings = typeof workspaceSettings.$inferSelect;
 export type WhatsappSession = typeof whatsappSessions.$inferSelect;

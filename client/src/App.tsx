@@ -10,6 +10,7 @@ import Domains from "./pages/Domains";
 import Mailboxes from "./pages/Mailboxes";
 import Inbox from "./pages/Inbox";
 import Scheduled from "./pages/Scheduled";
+import Appointments from "./pages/Appointments";
 import Archive from "./pages/Archive";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/mailboxes"><ProtectedRoute><Mailboxes /></ProtectedRoute></Route>
       <Route path="/inbox"><ProtectedRoute><Inbox /></ProtectedRoute></Route>
       <Route path="/scheduled"><ProtectedRoute><Scheduled /></ProtectedRoute></Route>
+      <Route path="/appointments"><ProtectedRoute><Appointments /></ProtectedRoute></Route>
       <Route path="/archive"><ProtectedRoute><Archive /></ProtectedRoute></Route>
       <Route path="/integrations"><ProtectedRoute><Integrations /></ProtectedRoute></Route>
       <Route path="/settings"><ProtectedRoute><Settings /></ProtectedRoute></Route>

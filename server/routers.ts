@@ -5,7 +5,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import {   clearCloudflareApiKey, createDomain, createEmailMessage, createMailbox, createWebhook, createWhatsappSession, deleteDomain, deleteMailbox, deleteWebhook, getOpenwaConfig, getWebhookById, getWebhooks, getWhatsappSessions, getWorkspaceSnapshot, hasCloudflareApiKey, hasOpenwaConfig, logActivity, saveCloudflareApiKey, saveOpenwaConfig, saveWorkspaceSettings, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook, updateWhatsappSession } from "./db";
+import { clearCloudflareApiKey, createAppointment, createDomain, createEmailMessage, createMailbox, createWebhook, createWhatsappSession, deleteAppointment, deleteDomain, deleteMailbox, deleteWebhook, getAppointments, getOpenwaConfig, getWebhookById, getWebhooks, getWhatsappSessions, getWorkspaceSnapshot, hasCloudflareApiKey, hasOpenwaConfig, logActivity, saveCloudflareApiKey, saveOpenwaConfig, saveWorkspaceSettings, updateAppointment, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook, updateWhatsappSession } from "./db";
 import { checkMailVpsConnection, mailVpsIntegration } from "./integrations/mailVps";
 import { openwaIntegration } from "./integrations/openwa";
 import { deliverWebhookTest } from "./integrations/webhookDelivery";
@@ -13,6 +13,9 @@ import { deliverWebhookTest } from "./integrations/webhookDelivery";
 const domainIdInput = z.object({ id: z.number().int().positive() });
 const mailboxInput = z.object({ domainId: z.number().int().positive(), email: z.string().email(), displayName: z.string().min(2).max(160), role: z.string().max(120).optional(), quotaGb: z.number().int().min(1).max(10000).optional() });
 const webhookInput = z.object({ name: z.string().min(2).max(160), url: z.string().url().refine((value) => value.startsWith("https://"), "Webhook deve usar HTTPS"), events: z.array(z.string()).min(1).max(30) });
+const appointmentCreateInput = z.object({ patientName: z.string().trim().min(2).max(160), patientPhone: z.string().trim().max(40).optional(), patientEmail: z.string().email().optional(), service: z.string().trim().min(2).max(160), professional: z.string().trim().min(2).max(160), room: z.string().trim().max(80).optional(), startsAt: z.coerce.date(), endsAt: z.coerce.date(), status: z.enum(["scheduled", "confirmed", "completed", "cancelled", "no_show"]).optional(), source: z.enum(["manual", "whatsapp"]).optional(), whatsappChatId: z.string().trim().max(160).optional(), notes: z.string().trim().max(5000).optional() }).refine((value) => value.endsAt > value.startsAt, { message: "Appointment end must be after start" });
+const appointmentWhatsappInput = appointmentCreateInput.and(z.object({ source: z.literal("whatsapp"), whatsappChatId: z.string().trim().min(1).max(160) }));
+const appointmentUpdateInput = z.object({ id: z.number().int().positive(), patientName: z.string().trim().min(2).max(160).optional(), patientPhone: z.string().trim().max(40).nullable().optional(), patientEmail: z.string().email().nullable().optional(), service: z.string().trim().min(2).max(160).optional(), professional: z.string().trim().min(2).max(160).optional(), room: z.string().trim().max(80).nullable().optional(), startsAt: z.coerce.date().optional(), endsAt: z.coerce.date().optional(), status: z.enum(["scheduled", "confirmed", "completed", "cancelled", "no_show"]).optional(), notes: z.string().trim().max(5000).nullable().optional() });
 
 export const appRouter = router({
   system: systemRouter,
@@ -53,6 +56,14 @@ export const appRouter = router({
     list: protectedProcedure.query(async ({ ctx }) => (await getWorkspaceSnapshot(ctx.user.id)).messages.filter((message) => message.scheduledAt)),
     create: protectedProcedure.input(z.object({ mailboxId: z.number().int().positive(), senderEmail: z.string().email(), senderName: z.string().max(160).optional(), toEmails: z.array(z.string().email()).min(1), subject: z.string().min(1).max(500), body: z.string().min(1), scheduledAt: z.coerce.date() })).mutation(async ({ ctx, input }) => { await mailVpsIntegration.sendMessage({ from: input.senderEmail, to: input.toEmails, subject: input.subject, body: input.body, scheduledAt: input.scheduledAt.getTime() }); const id = await createEmailMessage(ctx.user.id, { ...input, folder: "draft" }); return { id, success: true } as const; }),
     cancel: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => { await updateMessageStatus(ctx.user.id, input.id, { folder: "draft", scheduledAt: null }); return { success: true } as const; }),
+  }),
+  appointments: router({
+    list: protectedProcedure.input(z.object({ from: z.coerce.date().optional(), to: z.coerce.date().optional() }).optional()).query(({ ctx, input }) => getAppointments(ctx.user.id, input)),
+    create: protectedProcedure.input(appointmentCreateInput).mutation(({ ctx, input }) => createAppointment(ctx.user.id, input)),
+    createFromWhatsApp: protectedProcedure.input(appointmentWhatsappInput).mutation(({ ctx, input }) => createAppointment(ctx.user.id, input)),
+    update: protectedProcedure.input(appointmentUpdateInput).mutation(({ ctx, input }) => { const { id, ...values } = input; return updateAppointment(ctx.user.id, id, values); }),
+    confirm: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ ctx, input }) => updateAppointment(ctx.user.id, input.id, { status: "confirmed" })),
+    cancel: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ ctx, input }) => deleteAppointment(ctx.user.id, input.id)),
   }),
   integrations: router({
     cloudflareStatus: protectedProcedure.query(({ ctx }) => hasCloudflareApiKey(ctx.user.id).then((configured) => ({ configured }))),
