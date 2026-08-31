@@ -42,6 +42,15 @@ describe("OpenWA integration transport", () => {
     expect(fetchMock).toHaveBeenCalledWith("https://openwa.example.com/api/sessions/session-1/contacts?limit=100&offset=0", expect.anything());
   });
 
+  it("sends image media with the documented payload", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ messageId: "m2", timestamp: 2 }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await openwaIntegration.sendImage(config, "session-1", { chatId: "5511999999999@c.us", base64: "aGVsbG8=", mimetype: "image/png", filename: "foto.png", caption: "Confira", quotedMessageId: "m1" });
+
+    expect(fetchMock).toHaveBeenCalledWith("https://openwa.example.com/api/sessions/session-1/messages/send-image", expect.objectContaining({ method: "POST", body: JSON.stringify({ chatId: "5511999999999@c.us", base64: "aGVsbG8=", mimetype: "image/png", filename: "foto.png", caption: "Confira", quotedMessageId: "m1" }) }));
+  });
+
   it("uses the session id and international chat id payload for text messages", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ messageId: "m1", timestamp: 1 }), { status: 201 }));
     vi.stubGlobal("fetch", fetchMock);

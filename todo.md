@@ -136,3 +136,5 @@
 - [x] Prioridade 2 parcial: criar receptor `/api/automation/openwa/:secret` com validação de segredo, allowlist de eventos e registro isolado de mensagens/status/sessão
 
 - [x] Prioridade 3 parcial: adicionar procedures protegidos para enviar lembretes e reagendar atendimentos com mensagem pelo WhatsApp
+
+- [x] Adicionar teste do transporte OpenWA para envio de imagem com base64, mimetype, legenda e resposta citada
