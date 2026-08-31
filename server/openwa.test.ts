@@ -51,6 +51,18 @@ describe("OpenWA integration transport", () => {
     expect(fetchMock).toHaveBeenCalledWith("https://openwa.example.com/api/sessions/session-1/messages/send-image", expect.objectContaining({ method: "POST", body: JSON.stringify({ chatId: "5511999999999@c.us", base64: "aGVsbG8=", mimetype: "image/png", filename: "foto.png", caption: "Confira", quotedMessageId: "m1" }) }));
   });
 
+  it("routes video, audio and document payloads to their documented endpoints", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ messageId: "m3", timestamp: 3 }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const payload = { chatId: "5511999999999@c.us", base64: "ZGF0YQ==", mimetype: "application/octet-stream", filename: "arquivo.bin" };
+    await openwaIntegration.sendVideo(config, "session-1", { ...payload, mimetype: "video/mp4" });
+    await openwaIntegration.sendAudio(config, "session-1", { ...payload, mimetype: "audio/ogg", ptt: false });
+    await openwaIntegration.sendDocument(config, "session-1", payload);
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "https://openwa.example.com/api/sessions/session-1/messages/send-video", expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "https://openwa.example.com/api/sessions/session-1/messages/send-audio", expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "https://openwa.example.com/api/sessions/session-1/messages/send-document", expect.objectContaining({ method: "POST" }));
+  });
+
   it("uses the session id and international chat id payload for text messages", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ messageId: "m1", timestamp: 1 }), { status: 201 }));
     vi.stubGlobal("fetch", fetchMock);

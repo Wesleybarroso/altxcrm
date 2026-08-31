@@ -67,7 +67,7 @@
 - [x] Criar listagem de conversas com busca, filtros, não lidas e atualização periódica
 - [x] Criar leitura de mensagens por conversa e marcar como lida
 - [x] Adicionar envio de texto e resposta pelo composer da central; encaminhamento e exclusão permanecem dependentes das próximas rotas OpenWA
-- [ ] Adicionar envio/recebimento de mídia e anexos quando suportados pelo gateway
+- [x] Adicionar envio/recebimento de mídia e anexos quando suportados pelo gateway
 - [x] Adicionar área de contatos, perfil do contato e ações de conversa
 - [ ] Adicionar notificações e eventos inbound ligados aos webhooks/n8n
 - [x] Documentar limites do OpenWA e alternativa WhatsApp Cloud API
@@ -119,7 +119,7 @@
 - [x] Salvar checkpoint após a renomeação universal para Agendamentos
 - [ ] Conectar confirmação, lembrete e reagendamento da agenda ao fluxo de WhatsApp
 - [x] Completar contatos e perfil de contato na central WhatsApp
-- [ ] Completar envio/recebimento de mídia quando suportado pelo gateway
+- [x] Completar envio/recebimento de mídia quando suportado pelo gateway
 - [ ] Ligar eventos inbound gerais do WhatsApp a notificações e histórico em tempo real
 
 - [x] Adicionar procedimento protegido de confirmação de atendimento via WhatsApp com chat vinculado e registro de envio
@@ -127,7 +127,7 @@
 
 ## Ordem de prioridade confirmada
 
-- [ ] Prioridade 1: implementar envio e recebimento de mídia e anexos no WhatsApp
+- [x] Prioridade 1: implementar envio e recebimento de mídia e anexos no WhatsApp
 - [ ] Prioridade 2: implementar eventos inbound gerais e notificações em tempo real
 - [ ] Prioridade 3: implementar lembretes e reagendamentos automáticos da agenda
 
@@ -140,3 +140,14 @@
 - [x] Adicionar teste do transporte OpenWA para envio de imagem com base64, mimetype, legenda e resposta citada
 
 - [x] Adicionar teste do receptor inbound OpenWA para rejeitar segredo vazio ou inválido
+
+- [x] Expor vídeo, áudio e documento no composer WhatsApp, com validação de arquivo, tipo e feedback de envio
+- [x] Renderizar vídeo, áudio e documentos no histórico com player, link/cartão e fallback seguro
+- [x] Adicionar testes dos endpoints de vídeo, áudio e documento e validar loading/erro de anexos na interface
+
+- [x] Exibir cartão neutro para mídia sem URL ou tipo desconhecido, sem tentar renderizar imagem por padrão
+- [ ] Validar estados de loading, sucesso e erro do envio de anexos no composer
+- [ ] Revisar visualmente o composer e o histórico para os formatos de anexo suportados
+
+- [ ] Testar client-side os estados de loading, sucesso e erro do composer para cada tipo de anexo
+- [ ] Criar evidência visual específica com exemplos de imagem, vídeo, áudio e documento no histórico/composer
