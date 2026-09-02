@@ -57,6 +57,13 @@
       "when": 1788258963878,
       "tag": "0007_cool_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1788357327525,
+      "tag": "0008_gray_luke_cage",
+      "breakpoints": true
     }
   ]
 }

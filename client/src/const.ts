@@ -2,6 +2,26 @@ import { OAUTH_STATE_COOKIE, encodeOAuthState } from "@shared/const";
 
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+export function getOAuthConfigError(): string | null {
+  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
+  const appId = import.meta.env.VITE_APP_ID;
+
+  if (!appId || !oauthPortalUrl) {
+    return "O login ainda não está configurado. Informe VITE_APP_ID e VITE_OAUTH_PORTAL_URL nas variáveis do EasyPanel e faça um novo deploy.";
+  }
+
+  try {
+    const parsedUrl = new URL(oauthPortalUrl);
+    if (parsedUrl.protocol !== "https:" && parsedUrl.hostname !== "localhost") {
+      return "A URL do portal OAuth precisa usar HTTPS.";
+    }
+  } catch {
+    return "VITE_OAUTH_PORTAL_URL não contém uma URL válida.";
+  }
+
+  return null;
+}
+
 // Start the Manus OAuth login. Call this from an event handler or effect at the
 // moment you want to navigate, e.g. `onClick={() => startLogin()}`.
 //
@@ -12,7 +32,13 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 // call would desync it from an in-flight login and the callback would reject it
 // with "invalid oauth state". It returns void by design, so there is no URL to
 // stash across renders.
-export const startLogin = () => {
+export const startLogin = (): boolean => {
+  const configError = getOAuthConfigError();
+  if (configError) {
+    console.error(`[Auth] ${configError}`);
+    return false;
+  }
+
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
@@ -28,4 +54,5 @@ export const startLogin = () => {
   url.searchParams.set("type", "signIn");
 
   window.location.href = url.toString();
+  return true;
 };

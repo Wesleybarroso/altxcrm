@@ -1,16 +1,40 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, tinyint, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, tinyint, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  passwordHash: text("passwordHash"),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
+
+export const authAccounts = mysqlTable("authAccounts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  provider: varchar("provider", { length: 32 }).notNull(),
+  providerAccountId: varchar("providerAccountId", { length: 191 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({
+  providerAccountUnique: uniqueIndex("authAccounts_provider_account_unique").on(table.provider, table.providerAccountId),
+  userIdIndex: index("authAccounts_user_id_idx").on(table.userId),
+}));
+
+export const passwordResetTokens = mysqlTable("passwordResetTokens", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  tokenHash: varchar("tokenHash", { length: 128 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => ({
+  userIdIndex: index("passwordResetTokens_user_id_idx").on(table.userId),
+  expiresAtIndex: index("passwordResetTokens_expires_at_idx").on(table.expiresAt),
+}));
 
 export const domains = mysqlTable("domains", {
   id: int("id").autoincrement().primaryKey(),
@@ -133,6 +157,8 @@ export const workspaceSettings = mysqlTable("workspaceSettings", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+export type AuthAccount = typeof authAccounts.$inferSelect;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type Domain = typeof domains.$inferSelect;
 export type Mailbox = typeof mailboxes.$inferSelect;
 export type EmailMessage = typeof emailMessages.$inferSelect;

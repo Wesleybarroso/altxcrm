@@ -1,6 +1,7 @@
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lte } from "drizzle-orm";
+import { createHash } from "node:crypto";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, appointments, activityLogs, domains, emailMessages, mailboxes, users, webhooks, whatsappSessions, workspaceSettings } from "../drizzle/schema";
+import { InsertUser, appointments, authAccounts, activityLogs, domains, emailMessages, mailboxes, passwordResetTokens, users, webhooks, whatsappSessions, workspaceSettings } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { decryptWorkspaceSecret, encryptWorkspaceSecret } from "./security/secrets";
 
@@ -34,6 +35,99 @@ export async function getUserByOpenId(openId: string) {
   if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result[0];
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email.trim().toLowerCase())).limit(1);
+  return result[0];
+}
+
+export async function createEmailUser(input: { email: string; name: string; passwordHash: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const email = input.email.trim().toLowerCase();
+  const result = await db.insert(users).values({
+    openId: `email_${createStableUserKey(email)}`,
+    email,
+    name: input.name.trim(),
+    passwordHash: input.passwordHash,
+    loginMethod: "email",
+    lastSignedIn: new Date(),
+  });
+  return getUserById(Number(result[0].insertId));
+}
+
+export async function createExternalUser(input: { provider: string; providerAccountId: string; email: string | null; name: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const email = input.email ? input.email.trim().toLowerCase() : null;
+  const result = await db.insert(users).values({
+    openId: `oauth_${createStableUserKey(`${input.provider}:${input.providerAccountId}`)}`,
+    email,
+    name: input.name.trim() || "Usuário",
+    loginMethod: input.provider,
+    lastSignedIn: new Date(),
+  });
+  const user = await getUserById(Number(result[0].insertId));
+  if (!user) throw new Error("Não foi possível criar o usuário OAuth");
+  await linkAuthAccount({ userId: user.id, provider: input.provider, providerAccountId: input.providerAccountId });
+  return user;
+}
+
+export async function linkAuthAccount(input: { userId: number; provider: string; providerAccountId: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.insert(authAccounts).values({
+    userId: input.userId,
+    provider: input.provider,
+    providerAccountId: input.providerAccountId,
+  }).onDuplicateKeyUpdate({ set: { userId: input.userId } });
+}
+
+export async function getUserByAuthAccount(provider: string, providerAccountId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select({ user: users }).from(authAccounts).innerJoin(users, eq(authAccounts.userId, users.id)).where(and(eq(authAccounts.provider, provider), eq(authAccounts.providerAccountId, providerAccountId))).limit(1);
+  return result[0]?.user;
+}
+
+export async function updateUserPassword(userId: number, passwordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(users).set({ passwordHash, lastSignedIn: new Date() }).where(eq(users.id, userId));
+}
+
+export async function createPasswordResetToken(input: { userId: number; tokenHash: string; expiresAt: Date }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(and(eq(passwordResetTokens.userId, input.userId), isNull(passwordResetTokens.usedAt)));
+  await db.insert(passwordResetTokens).values(input);
+}
+
+export async function getPasswordResetToken(tokenHash: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(passwordResetTokens).where(and(eq(passwordResetTokens.tokenHash, tokenHash), isNull(passwordResetTokens.usedAt))).limit(1);
+  return result[0];
+}
+
+export async function markPasswordResetTokenUsed(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, id));
+}
+
+function createStableUserKey(value: string) {
+  return createHash("sha256").update(value).digest("hex").slice(0, 56);
 }
 
 export async function getWorkspaceSnapshot(ownerId: number) {

@@ -20,7 +20,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { startLogin } from "@/const";
+import { trpc } from "@/lib/trpc";
 import { useIsMobile } from "@/hooks/useMobile";
 import {
   Archive,
@@ -28,6 +28,7 @@ import {
   Clock3,
   ChevronDown,
   CircleHelp,
+  Github,
   Globe2,
   Inbox,
   LayoutDashboard,
@@ -47,6 +48,7 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { LanguageSelect, useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 const menuSections = [
   {
@@ -88,28 +90,120 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   });
   const { loading, user } = useAuth();
   const { t } = useLanguage();
+  const utils = trpc.useUtils();
+  const [authMode, setAuthMode] = useState<"login" | "register" | "forgot" | "reset">("login");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [authForm, setAuthForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const loginMutation = trpc.auth.login.useMutation();
+  const registerMutation = trpc.auth.register.useMutation();
+  const forgotMutation = trpc.auth.requestPasswordReset.useMutation();
+  const resetMutation = trpc.auth.resetPassword.useMutation();
+  const isAuthPending = loginMutation.isPending || registerMutation.isPending || forgotMutation.isPending || resetMutation.isPending;
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("authError");
+    const token = params.get("reset");
+    if (error) setAuthError(error);
+    if (token) {
+      setResetToken(token);
+      setAuthMode("reset");
+    }
+  }, []);
+
+  const updateAuthField = (field: keyof typeof authForm, value: string) => {
+    setAuthForm(current => ({ ...current, [field]: value }));
+    setAuthError(null);
+    setAuthNotice(null);
+  };
+
+  const startSocialLogin = (provider: "google" | "github") => {
+    window.location.href = `/api/auth/${provider}`;
+  };
+
+  const submitAuth = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAuthError(null);
+    setAuthNotice(null);
+    try {
+      if (authMode === "login") {
+        await loginMutation.mutateAsync({ email: authForm.email, password: authForm.password });
+        await utils.auth.me.invalidate();
+        return;
+      }
+      if (authMode === "register") {
+        if (authForm.password !== authForm.confirmPassword) throw new Error("As senhas não coincidem");
+        await registerMutation.mutateAsync({ name: authForm.name, email: authForm.email, password: authForm.password });
+        await utils.auth.me.invalidate();
+        return;
+      }
+      if (authMode === "forgot") {
+        await forgotMutation.mutateAsync({ email: authForm.email });
+        setAuthNotice("Se existir uma conta com este e-mail, enviaremos um link de recuperação. Verifique sua caixa de entrada.");
+        return;
+      }
+      if (!resetToken) throw new Error("O link de recuperação está incompleto");
+      if (authForm.password !== authForm.confirmPassword) throw new Error("As senhas não coincidem");
+      await resetMutation.mutateAsync({ token: resetToken, password: authForm.password });
+      window.history.replaceState({}, "", window.location.pathname);
+      setResetToken(null);
+      setAuthForm(current => ({ ...current, password: "", confirmPassword: "" }));
+      setAuthMode("login");
+      setAuthNotice("Senha alterada com sucesso. Agora você já pode entrar.");
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Não foi possível concluir a operação");
+    }
+  };
+
   if (loading) return <DashboardLayoutSkeleton />;
 
   if (!user) {
+    const title = authMode === "register" ? "Crie seu acesso ao AltxCRM." : authMode === "forgot" ? "Recupere seu acesso." : authMode === "reset" ? "Defina uma nova senha." : "Entre para cuidar da sua operação.";
+    const description = authMode === "register" ? "Cadastre seu e-mail e uma senha segura para criar seu workspace." : authMode === "forgot" ? "Informe seu e-mail e enviaremos as instruções para redefinir a senha." : authMode === "reset" ? "Escolha uma senha nova com pelo menos 8 caracteres." : "O painel centraliza domínios, caixas postais, mensagens e integrações da sua infraestrutura.";
+
     return (
-      <div className="editorial-grid editorial-glow flex min-h-screen items-center justify-center bg-[#071013] px-6 text-[#f4f5eb]">
+      <div className="editorial-grid editorial-glow flex min-h-screen items-center justify-center bg-[#071013] px-6 py-8 text-[#f4f5eb]">
         <div className="w-full max-w-md rounded-2xl border border-[#87bc9e]/25 bg-[#0b1b1e]/90 p-8 shadow-2xl shadow-black/30">
-          <div className="mb-10 flex items-center justify-between gap-3"><div className="flex items-center gap-3">
+          <div className="mb-8 flex items-center justify-between gap-3"><div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#c8ff4f] text-[#102017]"><MailPlus className="h-5 w-5" /></div>
             <div><div className="text-sm font-bold tracking-[0.2em]">ALTXCRM</div><div className="micro-label mt-1 text-[#7ea692]">{t("Workspace de e-mail")}</div></div></div><LanguageSelect />
           </div>
           <div className="micro-label mb-3 text-[#c8ff4f]">{t("Acesso restrito · 01")}</div>
-          <h1 className="display-font text-4xl leading-none">{t("Entre para cuidar da sua operação.")}</h1>
-          <p className="mt-4 text-sm leading-6 text-[#91ada0]">{t("O painel centraliza domínios, caixas postais, mensagens e integrações da sua infraestrutura.")}</p>
-          <Button onClick={() => startLogin()} className="action-button mt-8 h-12 w-full rounded-lg bg-[#c8ff4f] font-bold text-[#112119] hover:bg-[#d9ff80]">{t("Continuar com Google / OAuth")}</Button>
-          <div className="mt-3 grid grid-cols-2 gap-2"><Button variant="outline" onClick={() => startLogin()} className="h-10 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">{t("Criar conta")}</Button><Button variant="outline" onClick={() => startLogin()} className="h-10 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]">{t("Esqueci a senha")}</Button></div>
-          <p className="mt-3 text-center text-[11px] leading-5 text-[#638277]">{t("A criação e a recuperação de acesso são concluídas com segurança no Google/OAuth.")}</p>
-          <div className="mt-6 flex items-center gap-2 text-xs text-[#638277]"><ShieldCheck className="h-4 w-4 text-[#92cf8e]" /> {t("Sessão protegida e dados isolados por workspace.")}</div>
+          <h1 className="display-font text-4xl leading-none">{title}</h1>
+          <p className="mt-4 text-sm leading-6 text-[#91ada0]">{description}</p>
+
+          {authMode === "login" && <>
+            <div className="mt-7 grid grid-cols-2 gap-2">
+              <Button type="button" variant="outline" onClick={() => startSocialLogin("google")} className="h-11 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><span className="mr-2 grid h-5 w-5 place-items-center rounded bg-white font-bold text-[#4285f4]">G</span>Google</Button>
+              <Button type="button" variant="outline" onClick={() => startSocialLogin("github")} className="h-11 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><Github className="mr-2 h-4 w-4" />GitHub</Button>
+            </div>
+            <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#55776d]"><div className="h-px flex-1 bg-[#24483f]" />ou entre com e-mail<div className="h-px flex-1 bg-[#24483f]" /></div>
+          </>}
+
+          <form onSubmit={submitAuth} className="space-y-3">
+            {authMode === "register" && <Input required value={authForm.name} onChange={event => updateAuthField("name", event.target.value)} placeholder="Nome completo" autoComplete="name" className="h-11 border-[#31584e] bg-[#081719] text-[#eaf5e8] placeholder:text-[#638277]" />}
+            {(authMode === "login" || authMode === "register" || authMode === "forgot") && <Input required type="email" value={authForm.email} onChange={event => updateAuthField("email", event.target.value)} placeholder="seu@email.com" autoComplete="email" className="h-11 border-[#31584e] bg-[#081719] text-[#eaf5e8] placeholder:text-[#638277]" />}
+            {(authMode === "login" || authMode === "register" || authMode === "reset") && <Input required type="password" minLength={8} value={authForm.password} onChange={event => updateAuthField("password", event.target.value)} placeholder="Senha (mínimo de 8 caracteres)" autoComplete={authMode === "login" ? "current-password" : "new-password"} className="h-11 border-[#31584e] bg-[#081719] text-[#eaf5e8] placeholder:text-[#638277]" />}
+            {(authMode === "register" || authMode === "reset") && <Input required type="password" minLength={8} value={authForm.confirmPassword} onChange={event => updateAuthField("confirmPassword", event.target.value)} placeholder="Confirme sua senha" autoComplete="new-password" className="h-11 border-[#31584e] bg-[#081719] text-[#eaf5e8] placeholder:text-[#638277]" />}
+            <Button type="submit" disabled={isAuthPending} className="action-button h-12 w-full rounded-lg bg-[#c8ff4f] font-bold text-[#112119] hover:bg-[#d9ff80] disabled:cursor-not-allowed disabled:opacity-60">{isAuthPending ? "Aguarde…" : authMode === "register" ? "Criar conta" : authMode === "forgot" ? "Enviar link de recuperação" : authMode === "reset" ? "Salvar nova senha" : "Entrar"}</Button>
+          </form>
+
+          {authError && <div role="alert" className="mt-4 rounded-lg border border-[#a83c45]/50 bg-[#3a171d] px-3 py-2 text-xs leading-5 text-[#ffb7b2]">{authError}</div>}
+          {authNotice && <div role="status" className="mt-4 rounded-lg border border-[#5d9b68]/50 bg-[#153323] px-3 py-2 text-xs leading-5 text-[#bfe8bb]">{authNotice}</div>}
+
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-[#86a99a]">
+            {authMode !== "login" && <button type="button" onClick={() => { setAuthMode("login"); setAuthError(null); setAuthNotice(null); }} className="hover:text-[#c8ff4f]">Voltar para entrar</button>}
+            {authMode === "login" && <><button type="button" onClick={() => { setAuthMode("register"); setAuthError(null); }} className="hover:text-[#c8ff4f]">Criar conta</button><span className="text-[#31584e]">·</span><button type="button" onClick={() => { setAuthMode("forgot"); setAuthError(null); }} className="hover:text-[#c8ff4f]">Esqueci a senha</button></>}
+            {authMode === "register" && <button type="button" onClick={() => { setAuthMode("login"); setAuthError(null); }} className="hover:text-[#c8ff4f]">Já tenho uma conta</button>}
+          </div>
+          <p className="mt-5 text-center text-[11px] leading-5 text-[#638277]">Ao continuar, sua sessão será protegida e os dados ficarão isolados por workspace.</p>
+          <div className="mt-4 flex items-center gap-2 text-xs text-[#638277]"><ShieldCheck className="h-4 w-4 text-[#92cf8e]" /> Sessão protegida por cookie seguro.</div>
         </div>
       </div>
     );

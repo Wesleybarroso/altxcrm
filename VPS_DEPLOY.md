@@ -72,10 +72,16 @@ Crie `/etc/altxcrm/altxcrm.env` com proprietário root e permissões restritas. 
 | `PORT` | Porta local do servidor Express, definida pelo ambiente. |
 | `DATABASE_URL` | Conexão MySQL/MariaDB do workspace. |
 | `JWT_SECRET` | Assinatura das sessões; gere um valor aleatório longo e não o reutilize. |
-| `VITE_APP_ID` | Identificador OAuth do aplicativo. |
-| `OAUTH_SERVER_URL` | Servidor OAuth usado pelo callback de autenticação. |
-| `VITE_OAUTH_PORTAL_URL` | Portal de login usado no navegador. |
-| `OWNER_OPEN_ID` e `OWNER_NAME` | Identidade inicial/administrativa fornecida pelo ambiente de autenticação. |
+| `VITE_APP_ID` | Compatibilidade com OAuth Manus legado. |
+| `OAUTH_SERVER_URL` | Compatibilidade com OAuth Manus legado. |
+| `VITE_OAUTH_PORTAL_URL` | Compatibilidade com OAuth Manus legado. |
+| `OWNER_OPEN_ID` e `OWNER_NAME` | Identidade inicial/administrativa do fluxo legado. |
+| `PUBLIC_APP_URL` | URL HTTPS pública usada nos callbacks e links de recuperação. |
+| `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` | Credenciais do Google OAuth. |
+| `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` | Credenciais do GitHub OAuth. |
+| `AUTH_FROM_EMAIL` | Remetente dos e-mails de recuperação. |
+| `VPS_MAIL_API_URL` e `VPS_MAIL_API_TOKEN` | API de e-mail da VPS, alternativa ao SMTP. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_SECURE` | Configuração SMTP alternativa. |
 | `BUILT_IN_FORGE_API_URL` e `BUILT_IN_FORGE_API_KEY` | APIs internas usadas pelo runtime do projeto. |
 
 Exemplo de arquivo, sem usar valores reais:
@@ -83,8 +89,14 @@ Exemplo de arquivo, sem usar valores reais:
 ```dotenv
 NODE_ENV=production
 PORT=3000
+PUBLIC_APP_URL=https://crm.seudominio.com
 DATABASE_URL=mysql://altxcrm:<SENHA>@127.0.0.1:3306/altxcrm
 JWT_SECRET=<SEGREDO_ALEATORIO_LONGO>
+AUTH_FROM_EMAIL=acesso@seudominio.com
+GOOGLE_CLIENT_ID=<GOOGLE_CLIENT_ID>
+GOOGLE_CLIENT_SECRET=<GOOGLE_CLIENT_SECRET>
+GITHUB_CLIENT_ID=<GITHUB_CLIENT_ID>
+GITHUB_CLIENT_SECRET=<GITHUB_CLIENT_SECRET>
 VITE_APP_ID=<APP_ID>
 OAUTH_SERVER_URL=<OAUTH_SERVER_URL>
 VITE_OAUTH_PORTAL_URL=<VITE_OAUTH_PORTAL_URL>
@@ -213,9 +225,11 @@ Em seguida, emita o certificado TLS com a autoridade certificadora escolhida. O 
 
 ## 8. Configurar OAuth e domínio
 
-No provedor OAuth, cadastre a URL pública do callback no formato usado pelo runtime, normalmente `https://crm.seudominio.com/api/oauth/callback`. Confirme também a origem pública permitida e o portal de login. Faça o primeiro login em uma janela privada, verifique a criação da sessão e confirme que o usuário está isolado no próprio workspace.
+O AltxCRM oferece login local por e-mail/senha e login social por Google e GitHub. No Google Cloud, cadastre `https://crm.seudominio.com/api/auth/google/callback` como URI de redirecionamento autorizado. No GitHub, cadastre `https://crm.seudominio.com/api/auth/github/callback` como Authorization callback URL. Substitua o domínio pelos valores reais antes de salvar.
 
-Não altere cookies manualmente no frontend. O projeto usa o callback OAuth e a sessão do servidor; mudanças de domínio devem ser acompanhadas da atualização das URLs permitidas no provedor.
+Configure `PUBLIC_APP_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no arquivo de ambiente. Para recuperação de senha, defina `AUTH_FROM_EMAIL` e configure a API de e-mail da VPS ou as variáveis SMTP. Os links expiram em 30 minutos e podem ser usados uma única vez.
+
+Faça o primeiro login em uma janela privada, verifique a criação da sessão e confirme que o usuário está isolado no próprio workspace. Não altere cookies manualmente no frontend; mudanças de domínio devem ser acompanhadas da atualização das URLs permitidas nos provedores.
 
 ## 9. OpenWA, webhooks e WhatsApp
 

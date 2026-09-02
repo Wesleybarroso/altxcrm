@@ -26,9 +26,20 @@ Crie as variáveis no servidor ou no painel de implantação. **Não publique va
 | `JWT_SECRET` | Sim | Segredo longo e aleatório para sessões e criptografia de credenciais. |
 | `VITE_APP_ID` | Conforme OAuth | Identificador da aplicação OAuth. |
 | `OAUTH_SERVER_URL` | Conforme OAuth | URL do servidor OAuth. |
-| `VITE_OAUTH_PORTAL_URL` | Conforme OAuth | URL do portal de login usada no frontend. |
-| `OWNER_OPEN_ID` | Conforme OAuth | Open ID do proprietário inicial. |
-| `OWNER_NAME` | Conforme OAuth | Nome do proprietário inicial. |
+| `VITE_OAUTH_PORTAL_URL` | Legado Manus OAuth | URL do portal de login usada no frontend legado. |
+| `OWNER_OPEN_ID` | Conforme OAuth legado | Open ID do proprietário inicial. |
+| `GOOGLE_CLIENT_ID` | Google | Client ID da aplicação OAuth do Google. |
+| `GOOGLE_CLIENT_SECRET` | Google | Client secret da aplicação OAuth do Google. |
+| `GITHUB_CLIENT_ID` | GitHub | Client ID da aplicação OAuth do GitHub. |
+| `GITHUB_CLIENT_SECRET` | GitHub | Client secret da aplicação OAuth do GitHub. |
+| `PUBLIC_APP_URL` | Sim em produção | URL pública canônica, por exemplo `https://crm.seudominio.com`. |
+| `AUTH_FROM_EMAIL` | Recuperação de senha | Remetente dos links de recuperação. |
+| `SMTP_HOST` | SMTP alternativo | Host SMTP quando a API de e-mail da VPS não for usada. |
+| `SMTP_PORT` | SMTP alternativo | Porta SMTP; normalmente `587` ou `465`. |
+| `SMTP_USER` | SMTP alternativo | Usuário SMTP. |
+| `SMTP_PASSWORD` | SMTP alternativo | Senha SMTP. |
+| `SMTP_SECURE` | SMTP alternativo | Use `true` para SMTP implícito em TLS. |
+| `OWNER_NAME` | Conforme OAuth legado | Nome do proprietário inicial. |
 | `BUILT_IN_FORGE_API_URL` | Conforme storage/recursos Manus | Endpoint das APIs internas usadas por recursos integrados. |
 | `BUILT_IN_FORGE_API_KEY` | Conforme storage/recursos Manus | Chave server-side das APIs internas. |
 | `VITE_FRONTEND_FORGE_API_KEY` | Conforme recursos frontend | Chave exposta ao frontend somente quando o recurso exigir. |
@@ -42,6 +53,36 @@ Crie as variáveis no servidor ou no painel de implantação. **Não publique va
 | `CLOUDFLARE_GLOBAL_API_KEY` | Conforme Cloudflare | Chave global quando a integração exigir. |
 
 Gere um segredo seguro com `openssl rand -base64 48` e use o resultado em `JWT_SECRET`.
+
+## Autenticação e recuperação de senha
+
+A tela de acesso oferece três caminhos: **Google**, **GitHub** e **e-mail/senha**. O cadastro por e-mail cria o usuário no banco local e a sessão é mantida por cookie HTTP-only assinado com `JWT_SECRET`. As senhas não são armazenadas em texto; o projeto usa scrypt com salt individual.
+
+Para Google e GitHub, cadastre no provedor os callbacks abaixo, substituindo o domínio pelo endereço público definitivo:
+
+```text
+Google: https://crm.seudominio.com/api/auth/google/callback
+GitHub: https://crm.seudominio.com/api/auth/github/callback
+```
+
+Defina `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` e `PUBLIC_APP_URL`. A URL pública precisa ser HTTPS em produção. O login social não depende mais do OAuth Manus legado; `VITE_APP_ID`, `OAUTH_SERVER_URL` e `VITE_OAUTH_PORTAL_URL` permanecem documentados apenas para compatibilidade com o fluxo antigo.
+
+Para recuperação de senha, configure `AUTH_FROM_EMAIL` e escolha uma destas opções:
+
+```dotenv
+# Opção já integrada ao projeto
+VPS_MAIL_API_URL=https://mail.seudominio.com
+VPS_MAIL_API_TOKEN=seu_token
+
+# Ou SMTP padrão
+SMTP_HOST=smtp.seudominio.com
+SMTP_PORT=587
+SMTP_USER=seu_usuario
+SMTP_PASSWORD=sua_senha
+SMTP_SECURE=false
+```
+
+O link de redefinição expira em 30 minutos, é de uso único e o banco armazena somente o hash do token. Depois de incluir essas variáveis, faça um novo deploy para que o frontend e o backend recebam a configuração.
 
 ## Instalação direta em VPS
 
@@ -101,8 +142,14 @@ Preencha pelo menos:
 ```dotenv
 NODE_ENV=production
 PORT=3000
+PUBLIC_APP_URL=https://crm.seudominio.com
 DATABASE_URL=mysql://altxcrm:SENHA_FORTE_AQUI@127.0.0.1:3306/altxcrm
 JWT_SECRET=COLE_AQUI_UM_SEGREDO_GERADO_COM_OPENSSL
+AUTH_FROM_EMAIL=acesso@seudominio.com
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
 ```
 
 Adicione as demais variáveis conforme as integrações habilitadas.
@@ -199,8 +246,14 @@ Adicione as variáveis do quadro acima na seção **Environment**. Para uma inst
 ```dotenv
 NODE_ENV=production
 PORT=3000
+PUBLIC_APP_URL=https://crm.seudominio.com
 DATABASE_URL=mysql://altxcrm:SENHA@mysql:3306/altxcrm
 JWT_SECRET=COLE_AQUI_UM_SEGREDO_FORTE
+AUTH_FROM_EMAIL=acesso@seudominio.com
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
 ```
 
 No primeiro deploy, abra o terminal do serviço e execute:

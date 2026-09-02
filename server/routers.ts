@@ -9,6 +9,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { clearCloudflareApiKey, createAppointment, createDomain, createEmailMessage, createMailbox, createWebhook, createWhatsappSession, deleteAppointment, deleteDomain, deleteMailbox, deleteWebhook, getAppointment, getAppointments, getOpenwaConfig, getRecentActivities, getAppointmentByScheduleTaskUid, getWebhookById, getWebhooks, getWhatsappSessions, getWorkspaceSnapshot, hasCloudflareApiKey, hasOpenwaConfig, logActivity, saveCloudflareApiKey, saveOpenwaConfig, saveWorkspaceSettings, updateAppointment, updateDomainStatus, updateMailbox, updateMessageFolder, updateMessageStatus, updateWebhook, updateWhatsappSession, setAppointmentScheduleTaskUid } from "./db";
 import { checkMailVpsConnection, mailVpsIntegration } from "./integrations/mailVps";
+import { loginWithEmail, registerWithEmail, requestPasswordReset, resetPassword } from "./auth/service";
 import { openwaIntegration } from "./integrations/openwa";
 import { deliverWebhookTest } from "./integrations/webhookDelivery";
 
@@ -22,8 +23,16 @@ const appointmentUpdateInput = z.object({ id: z.number().int().positive(), patie
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
+    me: publicProcedure.query((opts) => {
+      if (!opts.ctx.user) return null;
+      const { passwordHash: _passwordHash, ...safeUser } = opts.ctx.user;
+      return safeUser;
+    }),
     logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }),
+    register: publicProcedure.input(z.object({ name: z.string().trim().min(2).max(160), email: z.string().email().max(320), password: z.string().min(8).max(128) })).mutation(({ ctx, input }) => registerWithEmail(ctx.res, input)),
+    login: publicProcedure.input(z.object({ email: z.string().email().max(320), password: z.string().min(1).max(128) })).mutation(({ ctx, input }) => loginWithEmail(ctx.res, input)),
+    requestPasswordReset: publicProcedure.input(z.object({ email: z.string().email().max(320) })).mutation(async ({ ctx, input }) => { await requestPasswordReset(ctx.req, input.email); return { success: true } as const; }),
+    resetPassword: publicProcedure.input(z.object({ token: z.string().min(32).max(128), password: z.string().min(8).max(128) })).mutation(async ({ input }) => { await resetPassword(input); return { success: true } as const; }),
   }),
   infrastructure: router({
     health: protectedProcedure.mutation(() => checkMailVpsConnection()),
