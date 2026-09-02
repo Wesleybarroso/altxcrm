@@ -5,30 +5,183 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { CalendarClock, Check, Clock3, Edit3, Mail, MoreHorizontal, Plus, Send, Trash2, UsersRound } from "lucide-react";
+import { CalendarClock, Clock3, Edit3, Mail, MoreHorizontal, Send, Trash2, UsersRound } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-type ScheduledMessage = { id: number; subject: string; recipient: string; sender: string; date: string; time: string; status: "Programado" | "Em processamento" };
-const initialItems: ScheduledMessage[] = [
-  { id: 1, subject: "Newsletter — novidades do mês", recipient: "1.284 contatos", sender: "news@altx.io", date: "29 ago 2026", time: "09:00", status: "Programado" },
-  { id: 2, subject: "Lembrete: revisão trimestral", recipient: "ana@altxstudio.com", sender: "operacao@altx.io", date: "01 set 2026", time: "14:30", status: "Programado" },
-  { id: 3, subject: "Relatório de disponibilidade", recipient: "diretoria@altx.io", sender: "sistema@altx.io", date: "05 set 2026", time: "08:15", status: "Em processamento" },
-];
+type ScheduledMessage = {
+  id: number;
+  subject: string;
+  recipient: string;
+  sender: string;
+  date: string;
+  time: string;
+  status: "Programado";
+};
 
 export default function Scheduled() {
-  const [items, setItems] = useState(initialItems);
   const scheduledQuery = trpc.scheduled.list.useQuery(undefined, { retry: false });
   const mailboxesQuery = trpc.mailboxes.list.useQuery(undefined, { retry: false });
   const activeMailbox = mailboxesQuery.data?.[0];
-  const senderEmail = activeMailbox?.email || (mailboxesQuery.data === undefined ? "equipe@altx.io" : "");
+  const senderEmail = activeMailbox?.email ?? "";
   const createScheduledMutation = trpc.scheduled.create.useMutation({ onSuccess: () => scheduledQuery.refetch() });
   const cancelScheduledMutation = trpc.scheduled.cancel.useMutation({ onSuccess: () => scheduledQuery.refetch() });
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ subject: "", recipient: "", date: "", time: "" });
-  const liveItems: ScheduledMessage[] = scheduledQuery.data === undefined ? items : scheduledQuery.data.map((item) => ({ id: item.id, subject: item.subject, recipient: Array.isArray(item.toEmails) ? item.toEmails[0] : String(item.toEmails), sender: item.senderEmail, date: item.scheduledAt ? new Date(item.scheduledAt).toLocaleDateString("pt-BR") : "—", time: item.scheduledAt ? new Date(item.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—", status: "Programado" }));
-  const displayItems = liveItems;
-  const create = () => { if (!form.subject || !form.recipient || !form.date || !form.time) return toast.error("Preencha todos os campos do agendamento."); if (!activeMailbox?.id || !senderEmail) return toast.error("Crie uma caixa postal antes de agendar mensagens."); const scheduledAt = new Date(`${form.date}T${form.time}:00`); createScheduledMutation.mutate({ mailboxId: activeMailbox.id, senderEmail, senderName: activeMailbox.displayName, toEmails: [form.recipient], subject: form.subject, body: "Mensagem preparada pelo AltxCRM.", scheduledAt }, { onSuccess: () => toast.success("E-mail agendado na infraestrutura."), onError: () => toast.error("Agendamento indisponível: conecte a API segura da VPS nas configurações.") }); setForm({ subject: "", recipient: "", date: "", time: "" }); setOpen(false); };
-  const cancel = (id: number) => { if (scheduledQuery.data?.some((item) => item.id === id)) cancelScheduledMutation.mutate({ id }, { onSuccess: () => toast.success("Agendamento cancelado."), onError: () => toast.error("Não foi possível cancelar o agendamento.") }); else toast.info("Conecte a API da VPS para cancelar este agendamento."); };
-  return <div className="editorial-grid editorial-glow min-h-screen bg-[#071013] text-[#f0f4eb]"><AppTopBar eyebrow="Mensageria / agendados" title={<>O próximo envio já tem <em className="text-[#c8ff4f]">hora marcada.</em></>} description="Prepare comunicações importantes com antecedência e acompanhe o que está a caminho." actionLabel="Agendar e-mail" onAction={() => setOpen(true)} /><div className="px-5 py-7 sm:px-8 lg:px-12"><QueryStateNotice isLoading={scheduledQuery.isLoading || mailboxesQuery.isLoading} isError={scheduledQuery.isError || mailboxesQuery.isError} empty={scheduledQuery.data !== undefined && scheduledQuery.data.length === 0} label="agendamentos" /><div className="mb-6 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-[#2a4d47] bg-[#0d2323] p-5"><div className="micro-label text-[#6f9386]">Próximo envio</div><div className="mt-5 text-2xl font-semibold">29 ago · 09:00</div><p className="mt-2 text-xs text-[#70988a]">Newsletter — novidades do mês</p></div><div className="rounded-2xl border border-[#2a4d47] bg-[#0d2323] p-5"><div className="micro-label text-[#6f9386]">Programados</div><div className="mt-5 text-3xl font-semibold">{displayItems.length.toString().padStart(2, "0")}</div><p className="mt-1 text-xs text-[#70988a]">envios aguardando execução</p></div><div className="rounded-2xl border border-[#2a4d47] bg-[#0d2323] p-5"><div className="micro-label text-[#6f9386]">Taxa de entrega</div><div className="mt-5 flex items-center gap-2 text-3xl font-semibold">98,7% <Check className="h-5 w-5 text-[#c8ff4f]" /></div><p className="mt-1 text-xs text-[#70988a]">média dos últimos 30 dias</p></div></div><div className="soft-card overflow-hidden rounded-2xl border hairline"><div className="flex items-center justify-between border-b border-[#25443f] px-5 py-5 sm:px-6"><div><div className="micro-label text-[#6d9184]">01 / Fila de envio</div><h2 className="mt-2 text-xl font-medium">E-mails programados</h2></div><Button variant="ghost" size="icon" className="text-[#6e9586] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Mais opções"><MoreHorizontal className="h-4 w-4" /></Button></div><div className="divide-y divide-[#193633]">{displayItems.map((item) => <div key={item.id} className="grid gap-4 px-5 py-5 transition-colors hover:bg-[#102b29] sm:grid-cols-[1.25fr_0.75fr_0.7fr_auto] sm:items-center sm:px-6"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-[#173630] text-[#a7df90]"><Mail className="h-4 w-4" /></div><div className="min-w-0"><div className="truncate font-medium text-[#e5f0e3]">{item.subject}</div><div className="mt-1 flex items-center gap-2 text-xs text-[#6b9181]"><span>{item.sender}</span><span className="h-1 w-1 rounded-full bg-[#557e6e]" /><span>{item.recipient}</span></div></div></div><div className="flex items-center gap-2 text-sm text-[#bdd0c5]"><CalendarClock className="h-4 w-4 text-[#86bf89]" />{item.date}</div><div className="flex items-center gap-2 text-sm text-[#bdd0c5]"><Clock3 className="h-4 w-4 text-[#86bf89]" />{item.time}<Badge className={`ml-1 border-0 text-[9px] ${item.status === "Programado" ? "bg-[#19372f] text-[#b8e99a]" : "bg-[#183242] text-[#8dd2ed]"}`}>{item.status}</Badge></div><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" onClick={() => toast.info("Editor de agendamento aberto.")} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Editar agendamento"><Edit3 className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" onClick={() => cancel(item.id)} className="h-9 w-9 text-[#72998b] hover:bg-[#3a2528] hover:text-[#ff9b91]" aria-label="Cancelar agendamento"><Trash2 className="h-3.5 w-3.5" /></Button></div></div>)}</div></div><div className="mt-4 grid gap-4 xl:grid-cols-2"><div className="rounded-2xl border border-[#274b47] bg-[#0d2323] p-5 sm:p-6"><div className="micro-label text-[#6d9184]">02 / Entrega</div><h2 className="mt-3 text-xl font-medium">Envios com rastreabilidade.</h2><p className="mt-3 text-sm leading-6 text-[#7fa194]">Cada envio registra horário, remetente, destinatários e o resultado da entrega na trilha de atividades.</p><div className="mt-6 flex items-center gap-3 rounded-xl bg-[#102b29] p-4"><Send className="h-4 w-4 text-[#c8ff4f]" /><span className="text-sm text-[#bdd5c4]">Fila processada pela infraestrutura da VPS</span></div></div><div className="soft-card rounded-2xl border hairline p-5 sm:p-6"><div className="micro-label text-[#6d9184]">03 / Segmentos</div><h2 className="mt-3 text-xl font-medium">Envie para as pessoas certas.</h2><p className="mt-3 text-sm leading-6 text-[#7fa194]">Combine caixas postais, aliases e listas para organizar os próximos disparos da operação.</p><Button onClick={() => toast.info("Segmentação será conectada à sua camada de dados.")} variant="outline" className="mt-5 border-[#3c6955] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><UsersRound className="mr-2 h-3.5 w-3.5" />Gerenciar segmentos</Button></div></div></div><Dialog open={open} onOpenChange={setOpen}><DialogContent className="border-[#31584e] bg-[#0f2524] text-[#eaf5e8]"><DialogHeader><DialogTitle className="display-font text-3xl">Agendar e-mail</DialogTitle><DialogDescription className="text-[#86a99a]">Escolha o destino e o momento em que a mensagem deve sair.</DialogDescription></DialogHeader><div className="space-y-4 py-4"><div><label className="micro-label mb-2 block text-[#739b8b]">Assunto</label><Input value={form.subject} onChange={(event) => setForm({ ...form, subject: event.target.value })} placeholder="Assunto do envio" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /></div><div><label className="micro-label mb-2 block text-[#739b8b]">Destinatários</label><Input value={form.recipient} onChange={(event) => setForm({ ...form, recipient: event.target.value })} placeholder="equipe@empresa.com.br" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /></div><div className="grid grid-cols-2 gap-3"><div><label className="micro-label mb-2 block text-[#739b8b]">Data</label><Input type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8]" /></div><div><label className="micro-label mb-2 block text-[#739b8b]">Horário</label><Input type="time" value={form.time} onChange={(event) => setForm({ ...form, time: event.target.value })} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8]" /></div></div></div><DialogFooter><Button variant="ghost" onClick={() => setOpen(false)} className="text-[#87a99a] hover:bg-[#183b38]">Cancelar</Button><Button onClick={create} className="bg-[#c8ff4f] text-[#112119] hover:bg-[#dcff82]">Agendar envio</Button></DialogFooter></DialogContent></Dialog></div>;
+
+  const displayItems: ScheduledMessage[] = (scheduledQuery.data ?? []).map((item) => ({
+    id: item.id,
+    subject: item.subject,
+    recipient: Array.isArray(item.toEmails) ? item.toEmails.join(", ") : String(item.toEmails ?? "—"),
+    sender: item.senderEmail,
+    date: item.scheduledAt ? new Date(item.scheduledAt).toLocaleDateString("pt-BR") : "—",
+    time: item.scheduledAt ? new Date(item.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—",
+    status: "Programado",
+  }));
+  const nextScheduled = displayItems[0];
+
+  const create = () => {
+    if (!form.subject || !form.recipient || !form.date || !form.time) {
+      toast.error("Preencha todos os campos do agendamento.");
+      return;
+    }
+    if (!activeMailbox?.id || !senderEmail) {
+      toast.error("Crie uma caixa postal antes de agendar mensagens.");
+      return;
+    }
+    const scheduledAt = new Date(`${form.date}T${form.time}:00`);
+    createScheduledMutation.mutate(
+      {
+        mailboxId: activeMailbox.id,
+        senderEmail,
+        senderName: activeMailbox.displayName,
+        toEmails: [form.recipient],
+        subject: form.subject,
+        body: "Mensagem preparada pelo AltxCRM.",
+        scheduledAt,
+      },
+      {
+        onSuccess: () => toast.success("E-mail agendado na infraestrutura."),
+        onError: () => toast.error("Agendamento indisponível: conecte a API segura da VPS nas configurações."),
+      },
+    );
+    setForm({ subject: "", recipient: "", date: "", time: "" });
+    setOpen(false);
+  };
+
+  const cancel = (id: number) => {
+    if (!scheduledQuery.data?.some((item) => item.id === id)) {
+      toast.info("Agendamento ainda não está disponível no workspace.");
+      return;
+    }
+    cancelScheduledMutation.mutate(
+      { id },
+      {
+        onSuccess: () => toast.success("Agendamento cancelado."),
+        onError: () => toast.error("Não foi possível cancelar o agendamento."),
+      },
+    );
+  };
+
+  return (
+    <div className="editorial-grid editorial-glow min-h-screen bg-[#071013] text-[#f0f4eb]">
+      <AppTopBar
+        eyebrow="Mensageria / agendados"
+        title={<>O próximo envio já tem <em className="text-[#c8ff4f]">hora marcada.</em></>}
+        description="Prepare comunicações importantes com antecedência e acompanhe o que está a caminho."
+        actionLabel="Agendar e-mail"
+        onAction={() => setOpen(true)}
+      />
+      <div className="px-5 py-7 sm:px-8 lg:px-12">
+        <QueryStateNotice
+          isLoading={scheduledQuery.isLoading || mailboxesQuery.isLoading}
+          isError={scheduledQuery.isError || mailboxesQuery.isError}
+          empty={scheduledQuery.data !== undefined && scheduledQuery.data.length === 0}
+          label="agendamentos"
+        />
+        <div className="mb-6 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-[#2a4d47] bg-[#0d2323] p-5">
+            <div className="micro-label text-[#6f9386]">Próximo envio</div>
+            <div className="mt-5 text-2xl font-semibold">{nextScheduled ? `${nextScheduled.date} · ${nextScheduled.time}` : "—"}</div>
+            <p className="mt-2 truncate text-xs text-[#70988a]">{nextScheduled?.subject ?? "Nenhum envio agendado"}</p>
+          </div>
+          <div className="rounded-2xl border border-[#2a4d47] bg-[#0d2323] p-5">
+            <div className="micro-label text-[#6f9386]">Programados</div>
+            <div className="mt-5 text-3xl font-semibold">{displayItems.length.toString().padStart(2, "0")}</div>
+            <p className="mt-1 text-xs text-[#70988a]">envios aguardando execução</p>
+          </div>
+          <div className="rounded-2xl border border-[#2a4d47] bg-[#0d2323] p-5">
+            <div className="micro-label text-[#6f9386]">Taxa de entrega</div>
+            <div className="mt-5 text-3xl font-semibold">—</div>
+            <p className="mt-1 text-xs text-[#70988a]">Sem dados de entrega disponíveis</p>
+          </div>
+        </div>
+
+        <div className="soft-card overflow-hidden rounded-2xl border hairline">
+          <div className="flex items-center justify-between border-b border-[#25443f] px-5 py-5 sm:px-6">
+            <div>
+              <div className="micro-label text-[#6d9184]">01 / Fila de envio</div>
+              <h2 className="mt-2 text-xl font-medium">E-mails programados</h2>
+            </div>
+            <Button variant="ghost" size="icon" className="text-[#6e9586] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Mais opções">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="divide-y divide-[#193633]">
+            {displayItems.length ? (
+              displayItems.map((item) => (
+                <div key={item.id} className="grid gap-4 px-5 py-5 transition-colors hover:bg-[#102b29] sm:grid-cols-[1.25fr_0.75fr_0.7fr_auto] sm:items-center sm:px-6">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#173630] text-[#a7df90]"><Mail className="h-4 w-4" /></div>
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-[#e5f0e3]">{item.subject}</div>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-[#6b9181]"><span>{item.sender}</span><span className="h-1 w-1 rounded-full bg-[#557e6e]" /><span>{item.recipient}</span></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#bdd0c5]"><CalendarClock className="h-4 w-4 text-[#86bf89]" />{item.date}</div>
+                  <div className="flex items-center gap-2 text-sm text-[#bdd0c5]"><Clock3 className="h-4 w-4 text-[#86bf89]" />{item.time}<Badge className="ml-1 border-0 bg-[#19372f] text-[9px] text-[#b8e99a]">{item.status}</Badge></div>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => toast.info("A edição de agendamentos existentes será conectada à camada de dados.")} className="h-9 w-9 text-[#72998b] hover:bg-[#183b38] hover:text-[#c8ff4f]" aria-label="Editar agendamento"><Edit3 className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => cancel(item.id)} className="h-9 w-9 text-[#72998b] hover:bg-[#3a2528] hover:text-[#ff9b91]" aria-label="Cancelar agendamento"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="px-5 py-12 text-center text-sm text-[#719286]">Nenhum e-mail agendado neste workspace.</div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <div className="rounded-2xl border border-[#274b47] bg-[#0d2323] p-5 sm:p-6">
+            <div className="micro-label text-[#6d9184]">02 / Entrega</div>
+            <h2 className="mt-3 text-xl font-medium">Envios com rastreabilidade.</h2>
+            <p className="mt-3 text-sm leading-6 text-[#7fa194]">Cada envio registra horário, remetente, destinatários e o resultado da entrega na trilha de atividades.</p>
+            <div className="mt-6 flex items-center gap-3 rounded-xl bg-[#102b29] p-4"><Send className="h-4 w-4 text-[#c8ff4f]" /><span className="text-sm text-[#bdd5c4]">Fila processada pela infraestrutura da VPS</span></div>
+          </div>
+          <div className="soft-card rounded-2xl border hairline p-5 sm:p-6">
+            <div className="micro-label text-[#6d9184]">03 / Segmentos</div>
+            <h2 className="mt-3 text-xl font-medium">Envie para as pessoas certas.</h2>
+            <p className="mt-3 text-sm leading-6 text-[#7fa194]">Combine caixas postais, aliases e listas para organizar os próximos disparos da operação.</p>
+            <Button onClick={() => toast.info("Segmentação será conectada à sua camada de dados.")} variant="outline" className="mt-5 border-[#3c6955] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><UsersRound className="mr-2 h-3.5 w-3.5" />Gerenciar segmentos</Button>
+          </div>
+        </div>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="border-[#31584e] bg-[#0f2524] text-[#eaf5e8]">
+          <DialogHeader>
+            <DialogTitle className="display-font text-3xl">Agendar e-mail</DialogTitle>
+            <DialogDescription className="text-[#86a99a]">Escolha o destino e o momento em que a mensagem deve sair.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div><label className="micro-label mb-2 block text-[#739b8b]">Assunto</label><Input value={form.subject} onChange={(event) => setForm({ ...form, subject: event.target.value })} placeholder="Assunto do envio" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /></div>
+            <div><label className="micro-label mb-2 block text-[#739b8b]">Destinatários</label><Input value={form.recipient} onChange={(event) => setForm({ ...form, recipient: event.target.value })} placeholder="equipe@empresa.com.br" className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8] placeholder:text-[#4f7568]" /></div>
+            <div className="grid grid-cols-2 gap-3"><div><label className="micro-label mb-2 block text-[#739b8b]">Data</label><Input type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8]" /></div><div><label className="micro-label mb-2 block text-[#739b8b]">Horário</label><Input type="time" value={form.time} onChange={(event) => setForm({ ...form, time: event.target.value })} className="h-10 border-[#3d6958] bg-[#0a1b1e] text-[#eaf5e8]" /></div></div>
+          </div>
+          <DialogFooter><Button variant="ghost" onClick={() => setOpen(false)} className="text-[#87a99a] hover:bg-[#183b38]">Cancelar</Button><Button onClick={create} disabled={createScheduledMutation.isPending} className="bg-[#c8ff4f] text-[#112119] hover:bg-[#dcff82]">{createScheduledMutation.isPending ? "Agendando…" : "Agendar envio"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

@@ -178,3 +178,62 @@
 - [x] Adicionar cobertura server-side dos fluxos de agenda via WhatsApp
 
 - [x] Criar guia de instalação, operação, segurança e troubleshooting para hospedagem do AltxCRM em VPS
+
+
+## Remoção de dados demonstrativos do painel
+
+- [x] Auditar métricas, percentuais, datas e textos demonstrativos do dashboard
+- [x] Substituir indicadores fake por dados reais do workspace ou estados vazios explícitos
+- [x] Remover dados fake de gráficos, atividades recentes e cards auxiliares
+- [x] Validar que nenhuma informação demonstrativa permaneça no painel
+- [x] Testar acessibilidade, TypeScript, testes e build após a correção
+
+- [x] Remover listas e fallback demonstrativos de caixas postais, caixa de entrada, agendados, arquivo e integrações
+- [x] Remover endpoints, domínios e configurações visuais de exemplo que não estejam ligados ao workspace
+- [x] Executar e registrar revisão estrutural de acessibilidade das telas limpas do painel, cobrindo navegação por teclado prevista, labels/aria-labels, foco visível e estados vazios
+
+
+## Correção da troca de idioma — texto híbrido
+
+- [x] Reproduzir a troca PT-BR/EN/ES e localizar strings que permanecem em português
+- [x] Corrigir a fonte das strings sem alterar layout, tipografia, cores ou espaçamentos
+- [x] Garantir que labels, botões, placeholders, estados vazios e feedbacks acompanhem o idioma selecionado
+- [x] Adicionar cobertura automatizada para a regressão de idioma
+- [x] Validar visualmente as telas afetadas e salvar checkpoint da correção
+
+- [x] Validar a tela autenticada no preview e a troca PT-BR/EN/ES no DOM das rotas afetadas, incluindo estados dinâmicos sem texto híbrido
+- [x] Adicionar teste client-side/integration para LanguageProvider cobrindo troca no DOM e reversão EN/ES para PT-BR, incluindo QueryStateNotice
+- [ ] Salvar um checkpoint bem-sucedido após a correção de i18n
+- [x] Validar no preview autenticado as rotas afetadas, conferindo hierarquia, estados dinâmicos e ausência de texto híbrido no fluxo revisado
+- [x] Adicionar teste de integração do LanguageProvider que execute setLanguage no mesmo mount e comprove a reversão EN/ES -> PT-BR no DOM, incluindo QueryStateNotice
+- [ ] Validar em sessão autenticada real as rotas afetadas pela troca de idioma, conferindo labels, placeholders, estados vazios e toasts sem texto híbrido, e registrar evidência verificável
+
+
+## Bloqueio de validação autenticada
+
+- [ ] Registrar o erro de entrada no preview como bloqueio externo de sessão/auth, sem alterar o design ou o fluxo de idioma
+- [ ] Repetir a validação visual autenticada quando uma sessão válida estiver disponível
+
+
+## Sincronização com repositório GitHub
+
+- [ ] Conferir remote, branch e estado das alterações locais do AltxCRM
+- [ ] Validar que a correção de idioma, testes e configuração do projeto estão prontos para commit
+- [ ] Enviar as mudanças para o repositório GitHub configurado
+- [ ] Confirmar o commit e a sincronização remota
+
+
+## Sincronização confirmada com Wesleybarroso/altix
+
+- [ ] Clonar e inspecionar a branch principal de Wesleybarroso/altix sem alterar o projeto local
+- [ ] Comparar a estrutura do repositório remoto com a aplicação AltxCRM atual
+- [ ] Escolher integração por commit/branch sem sobrescrever conteúdo incompatível
+- [ ] Enviar a correção de idioma e confirmar o commit remoto
+
+
+## Novo repositório GitHub do AltxCRM
+
+- [ ] Escolher um nome único e verificar disponibilidade no GitHub
+- [ ] Criar o novo repositório como privado
+- [ ] Associar o projeto AltxCRM ao novo remote sem alterar Wesleybarroso/altix
+- [ ] Enviar o código e confirmar a branch principal remota

@@ -64,7 +64,7 @@ export async function getWorkspaceSnapshot(ownerId: number) {
 export async function createDomain(ownerId: number, domain: string) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
-  const result = await db.insert(domains).values({ ownerId, domain: domain.trim().toLowerCase(), status: "pending", dnsTarget: "mx.altx.io" });
+  const result = await db.insert(domains).values({ ownerId, domain: domain.trim().toLowerCase(), status: "pending" });
   await logActivity(ownerId, "Domínio adicionado", "domain", Number(result[0].insertId), domain);
   return Number(result[0].insertId);
 }
@@ -174,7 +174,7 @@ export async function deleteWebhook(ownerId: number, id: number) {
 export async function saveWorkspaceSettings(ownerId: number, input: { storageLimitGb?: number; providerLabel?: string; integrationEndpoint?: string; mfaRequired?: number; securityAlerts?: number; auditLogEnabled?: number }) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
-  await db.insert(workspaceSettings).values({ ownerId, storageLimitGb: input.storageLimitGb ?? 200, providerLabel: input.providerLabel ?? "VPS Altx · Produção", integrationEndpoint: input.integrationEndpoint ?? "api.altx.io/v1/mail", mfaRequired: input.mfaRequired ?? 1, securityAlerts: input.securityAlerts ?? 1, auditLogEnabled: input.auditLogEnabled ?? 1 }).onDuplicateKeyUpdate({ set: input });
+  await db.insert(workspaceSettings).values({ ownerId, storageLimitGb: input.storageLimitGb ?? 200, providerLabel: input.providerLabel?.trim() || null, integrationEndpoint: input.integrationEndpoint?.trim() || null, mfaRequired: input.mfaRequired ?? 1, securityAlerts: input.securityAlerts ?? 1, auditLogEnabled: input.auditLogEnabled ?? 1 }).onDuplicateKeyUpdate({ set: input });
 }
 
 export async function saveCloudflareApiKey(ownerId: number, apiKey: string) {

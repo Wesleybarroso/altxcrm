@@ -11,29 +11,20 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type Message = { id: number; sender: string; email: string; subject: string; preview: string; body: string; time: string; label: string; unread: boolean; starred: boolean; initials: string; color: string };
-const initialMessages: Message[] = [
-  { id: 1, sender: "Marina Costa", email: "marina@cliente.com", subject: "Briefing da campanha de setembro", preview: "Wesley, deixei os pontos principais organizados no documento...", body: "Wesley,\n\nDeixei os pontos principais organizados no documento compartilhado. A ideia é aprovarmos a primeira versão ainda esta semana para manter o cronograma.\n\nSe precisar de algum ajuste, me chama por aqui.\n\nAbraço,\nMarina", time: "09:42", label: "Clientes", unread: true, starred: true, initials: "MC", color: "#b8e86c" },
-  { id: 2, sender: "Núcleo Financeiro", email: "financeiro@parceiro.com", subject: "Documentos fiscais — fechamento mensal", preview: "Segue a pasta com as notas e comprovantes do mês de agosto...", body: "Olá,\n\nSegue a pasta com as notas e comprovantes do mês de agosto para conferência.\n\nAtenciosamente,\nNúcleo Financeiro", time: "08:17", label: "Financeiro", unread: true, starred: false, initials: "NF", color: "#7bd6c0" },
-  { id: 3, sender: "João Pedro", email: "joao@altx.io", subject: "Re: Acesso ao ambiente de homologação", preview: "Tudo certo, já validei o novo acesso e os testes passaram...", body: "Tudo certo, já validei o novo acesso e os testes passaram. Podemos liberar para a equipe de produto.", time: "Ontem", label: "Interno", unread: false, starred: false, initials: "JP", color: "#e2bf70" },
-  { id: 4, sender: "Ana Souza", email: "ana@altxstudio.com", subject: "Convite: reunião de operação", preview: "Você está convidado para nossa revisão semanal na quinta...", body: "Você está convidado para nossa revisão semanal na quinta-feira, às 14h. Pauta: operação, incidentes e próximos marcos.", time: "Ontem", label: "Interno", unread: false, starred: true, initials: "AS", color: "#80bce3" },
-  { id: 5, sender: "Cloud Provider", email: "billing@cloud.example", subject: "Sua fatura está disponível", preview: "A fatura referente ao período atual já pode ser consultada...", body: "A fatura referente ao período atual já pode ser consultada no portal financeiro.", time: "26 ago", label: "Automático", unread: false, starred: false, initials: "CP", color: "#b38cf1" },
-];
-
 export default function Inbox() {
-  const messages = initialMessages;
   const messagesQuery = trpc.messages.list.useQuery({ folder: "inbox" }, { retry: false });
   const mailboxesQuery = trpc.mailboxes.list.useQuery(undefined, { retry: false });
   const activeMailbox = mailboxesQuery.data?.[0];
-  const senderEmail = activeMailbox?.email || (mailboxesQuery.data === undefined ? "equipe@altx.io" : "");
+  const senderEmail = activeMailbox?.email || "";
   const markReadMutation = trpc.messages.markRead.useMutation({ onSuccess: () => messagesQuery.refetch() });
   const moveMutation = trpc.messages.move.useMutation({ onSuccess: () => messagesQuery.refetch() });
   const sendMutation = trpc.messages.send.useMutation();
-  const [selectedId, setSelectedId] = useState(1);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [filter, setFilter] = useState("Todos");
   const [query, setQuery] = useState("");
   const [composeOpen, setComposeOpen] = useState(false);
   const [compose, setCompose] = useState({ to: "", subject: "", body: "" });
-  const liveMessages: Message[] = messagesQuery.data === undefined ? messages : messagesQuery.data.map((message, index) => ({ id: message.id, sender: message.senderName || message.senderEmail, email: message.senderEmail, subject: message.subject, preview: message.body.slice(0, 80), body: message.body, time: message.createdAt ? new Date(message.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "agora", label: "Inbox", unread: !message.isRead, starred: Boolean(message.isStarred), initials: (message.senderName || message.senderEmail).slice(0, 2).toUpperCase(), color: ["#b8e86c", "#7bd6c0", "#e2bf70", "#80bce3"][index % 4] }));
+  const liveMessages: Message[] = (messagesQuery.data ?? []).map((message, index) => ({ id: message.id, sender: message.senderName || message.senderEmail, email: message.senderEmail, subject: message.subject, preview: message.body.slice(0, 80), body: message.body, time: message.createdAt ? new Date(message.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—", label: "Inbox", unread: !message.isRead, starred: Boolean(message.isStarred), initials: (message.senderName || message.senderEmail).slice(0, 2).toUpperCase(), color: ["#b8e86c", "#7bd6c0", "#e2bf70", "#80bce3"][index % 4] }));
   const displayMessages = liveMessages;
   const selected = displayMessages.find((message) => message.id === selectedId) || displayMessages[0];
   const filtered = useMemo(() => displayMessages.filter((message) => (filter === "Não lidos" ? message.unread : filter === "Com estrela" ? message.starred : true) && `${message.sender} ${message.subject} ${message.preview}`.toLowerCase().includes(query.toLowerCase())), [displayMessages, filter, query]);
