@@ -18,7 +18,7 @@ import { sendAuthEmail } from "./mailer";
 import { createOpaqueToken, hashOpaqueToken, hashPassword, verifyPassword } from "./password";
 import type { User } from "../../drizzle/schema";
 
-export type SocialProvider = "google" | "github";
+export type SocialProvider = "github";
 
 type SocialProfile = {
   providerAccountId: string;
@@ -112,20 +112,7 @@ export function getPublicOrigin(req: Request) {
 }
 
 export function getSocialAuthorizationUrl(provider: SocialProvider, req: Request, state: string) {
-  const redirectUri = `${getPublicOrigin(req)}/api/auth/${provider}/callback`;
-  if (provider === "google") {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    if (!clientId) throw new Error("Google OAuth não configurado");
-    const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-    url.searchParams.set("client_id", clientId);
-    url.searchParams.set("redirect_uri", redirectUri);
-    url.searchParams.set("response_type", "code");
-    url.searchParams.set("scope", "openid email profile");
-    url.searchParams.set("state", state);
-    url.searchParams.set("prompt", "select_account");
-    return url.toString();
-  }
-
+  const redirectUri = `${getPublicOrigin(req)}/api/auth/github/callback`;
   const clientId = process.env.GITHUB_CLIENT_ID;
   if (!clientId) throw new Error("GitHub OAuth não configurado");
   const url = new URL("https://github.com/login/oauth/authorize");
@@ -137,9 +124,7 @@ export function getSocialAuthorizationUrl(provider: SocialProvider, req: Request
 }
 
 export async function completeSocialLogin(res: ExpressResponse, req: Request, provider: SocialProvider, code: string, state: string) {
-  const profile = provider === "google"
-    ? await getGoogleProfile(req, code, state)
-    : await getGithubProfile(req, code, state);
+  const profile = await getGithubProfile(req, code, state);
 
   let user = await getUserByAuthAccount(provider, profile.providerAccountId);
   if (!user && profile.email && profile.emailVerified) user = await getUserByEmail(normalizeEmail(profile.email));
@@ -189,27 +174,6 @@ export async function resetPassword(input: { token: string; password: string }) 
   const passwordHash = await hashPassword(input.password);
   await updateUserPassword(record.userId, passwordHash);
   await markPasswordResetTokenUsed(record.id);
-}
-
-async function getGoogleProfile(req: Request, code: string, state: string): Promise<SocialProfile> {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) throw new Error("Google OAuth não configurado");
-  const redirectUri = `${getPublicOrigin(req)}/api/auth/google/callback`;
-  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-    body: new URLSearchParams({ code, client_id: clientId, client_secret: clientSecret, redirect_uri: redirectUri, grant_type: "authorization_code" }),
-  });
-  const token = await readJson<{ access_token?: string }>(tokenResponse, "Google token");
-  if (!token.access_token) throw new Error("Google não retornou access_token");
-
-  const profileResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
-    headers: { Authorization: `Bearer ${token.access_token}` },
-  });
-  const profile = await readJson<{ sub?: string; email?: string; email_verified?: boolean; name?: string }>(profileResponse, "Google profile");
-  if (!profile.sub) throw new Error("Google não retornou o identificador da conta");
-  return { providerAccountId: profile.sub, email: profile.email ?? null, emailVerified: profile.email_verified === true, name: profile.name || profile.email || "Usuário Google" };
 }
 
 async function getGithubProfile(req: Request, code: string, state: string): Promise<SocialProfile> {

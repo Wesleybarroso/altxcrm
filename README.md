@@ -28,8 +28,6 @@ Crie as variáveis no servidor ou no painel de implantação. **Não publique va
 | `OAUTH_SERVER_URL` | Conforme OAuth | URL do servidor OAuth. |
 | `VITE_OAUTH_PORTAL_URL` | Legado Manus OAuth | URL do portal de login usada no frontend legado. |
 | `OWNER_OPEN_ID` | Conforme OAuth legado | Open ID do proprietário inicial. |
-| `GOOGLE_CLIENT_ID` | Google | Client ID da aplicação OAuth do Google. |
-| `GOOGLE_CLIENT_SECRET` | Google | Client secret da aplicação OAuth do Google. |
 | `GITHUB_CLIENT_ID` | GitHub | Client ID da aplicação OAuth do GitHub. |
 | `GITHUB_CLIENT_SECRET` | GitHub | Client secret da aplicação OAuth do GitHub. |
 | `PUBLIC_APP_URL` | Sim em produção | URL pública canônica, por exemplo `https://crm.seudominio.com`. |
@@ -56,16 +54,15 @@ Gere um segredo seguro com `openssl rand -base64 48` e use o resultado em `JWT_S
 
 ## Autenticação e recuperação de senha
 
-A tela de acesso oferece três caminhos: **Google**, **GitHub** e **e-mail/senha**. O cadastro por e-mail cria o usuário no banco local e a sessão é mantida por cookie HTTP-only assinado com `JWT_SECRET`. As senhas não são armazenadas em texto; o projeto usa scrypt com salt individual.
+A tela de acesso oferece dois caminhos: **GitHub** e **e-mail/senha**. O cadastro por e-mail cria o usuário no banco local e a sessão é mantida por cookie HTTP-only assinado com `JWT_SECRET`. As senhas não são armazenadas em texto; o projeto usa scrypt com salt individual.
 
-Para Google e GitHub, cadastre no provedor os callbacks abaixo, substituindo o domínio pelo endereço público definitivo:
+Para GitHub, cadastre no provedor o callback abaixo, substituindo o domínio pelo endereço público definitivo:
 
 ```text
-Google: https://crm.seudominio.com/api/auth/google/callback
 GitHub: https://crm.seudominio.com/api/auth/github/callback
 ```
 
-Defina `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` e `PUBLIC_APP_URL`. A URL pública precisa ser HTTPS em produção. O login social não depende mais do OAuth Manus legado; `VITE_APP_ID`, `OAUTH_SERVER_URL` e `VITE_OAUTH_PORTAL_URL` permanecem documentados apenas para compatibilidade com o fluxo antigo.
+Defina `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` e `PUBLIC_APP_URL`. A URL pública precisa ser HTTPS em produção. O login social não depende mais do OAuth Manus legado; `VITE_APP_ID`, `OAUTH_SERVER_URL` e `VITE_OAUTH_PORTAL_URL` permanecem documentados apenas para compatibilidade com o fluxo antigo.
 
 Para recuperação de senha, configure `AUTH_FROM_EMAIL` e escolha uma destas opções:
 
@@ -146,8 +143,6 @@ PUBLIC_APP_URL=https://crm.seudominio.com
 DATABASE_URL=mysql://altxcrm:SENHA_FORTE_AQUI@127.0.0.1:3306/altxcrm
 JWT_SECRET=COLE_AQUI_UM_SEGREDO_GERADO_COM_OPENSSL
 AUTH_FROM_EMAIL=acesso@seudominio.com
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
 ```
@@ -250,8 +245,6 @@ PUBLIC_APP_URL=https://crm.seudominio.com
 DATABASE_URL=mysql://altxcrm:SENHA@mysql:3306/altxcrm
 JWT_SECRET=COLE_AQUI_UM_SEGREDO_FORTE
 AUTH_FROM_EMAIL=acesso@seudominio.com
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
 ```

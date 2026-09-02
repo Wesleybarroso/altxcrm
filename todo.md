@@ -4,7 +4,7 @@
 - [x] Analisar a referência visual do portfólio e definir direção editorial escura
 - [x] Criar shell autenticado do painel com sidebar profissional e navegação responsiva
 - [x] Implementar dashboard com métricas de domínios, caixas postais, armazenamento, mensagens e atividades
-- [x] Implementar tela de login OAuth/Google, criação de conta e recuperação de senha (criação e recuperação concluídas no provedor OAuth)
+- [x] Implementar tela de login GitHub/e-mail, criação de conta e recuperação de senha (criação e recuperação concluídas no provedor OAuth)
 - [x] Implementar gestão de domínios com adicionar, verificar, remover e instruções DNS
 - [x] Implementar gestão de caixas postais com criar, editar, suspender, excluir, redefinir senha e cotas
 - [x] Implementar caixa de entrada com listar, ler, redigir, enviar, responder, encaminhar, arquivar e excluir

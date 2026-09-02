@@ -77,7 +77,6 @@ Crie `/etc/altxcrm/altxcrm.env` com proprietário root e permissões restritas. 
 | `VITE_OAUTH_PORTAL_URL` | Compatibilidade com OAuth Manus legado. |
 | `OWNER_OPEN_ID` e `OWNER_NAME` | Identidade inicial/administrativa do fluxo legado. |
 | `PUBLIC_APP_URL` | URL HTTPS pública usada nos callbacks e links de recuperação. |
-| `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` | Credenciais do Google OAuth. |
 | `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` | Credenciais do GitHub OAuth. |
 | `AUTH_FROM_EMAIL` | Remetente dos e-mails de recuperação. |
 | `VPS_MAIL_API_URL` e `VPS_MAIL_API_TOKEN` | API de e-mail da VPS, alternativa ao SMTP. |
@@ -93,8 +92,6 @@ PUBLIC_APP_URL=https://crm.seudominio.com
 DATABASE_URL=mysql://altxcrm:<SENHA>@127.0.0.1:3306/altxcrm
 JWT_SECRET=<SEGREDO_ALEATORIO_LONGO>
 AUTH_FROM_EMAIL=acesso@seudominio.com
-GOOGLE_CLIENT_ID=<GOOGLE_CLIENT_ID>
-GOOGLE_CLIENT_SECRET=<GOOGLE_CLIENT_SECRET>
 GITHUB_CLIENT_ID=<GITHUB_CLIENT_ID>
 GITHUB_CLIENT_SECRET=<GITHUB_CLIENT_SECRET>
 VITE_APP_ID=<APP_ID>
@@ -225,9 +222,9 @@ Em seguida, emita o certificado TLS com a autoridade certificadora escolhida. O 
 
 ## 8. Configurar OAuth e domínio
 
-O AltxCRM oferece login local por e-mail/senha e login social por Google e GitHub. No Google Cloud, cadastre `https://crm.seudominio.com/api/auth/google/callback` como URI de redirecionamento autorizado. No GitHub, cadastre `https://crm.seudominio.com/api/auth/github/callback` como Authorization callback URL. Substitua o domínio pelos valores reais antes de salvar.
+O AltxCRM oferece login local por e-mail/senha e login social pelo GitHub. No GitHub, cadastre `https://crm.seudominio.com/api/auth/github/callback` como Authorization callback URL. Substitua o domínio pelos valores reais antes de salvar.
 
-Configure `PUBLIC_APP_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no arquivo de ambiente. Para recuperação de senha, defina `AUTH_FROM_EMAIL` e configure a API de e-mail da VPS ou as variáveis SMTP. Os links expiram em 30 minutos e podem ser usados uma única vez.
+Configure `PUBLIC_APP_URL`, `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no arquivo de ambiente. Para recuperação de senha, defina `AUTH_FROM_EMAIL` e configure a API de e-mail da VPS ou as variáveis SMTP. Os links expiram em 30 minutos e podem ser usados uma única vez.
 
 Faça o primeiro login em uma janela privada, verifique a criação da sessão e confirme que o usuário está isolado no próprio workspace. Não altere cookies manualmente no frontend; mudanças de domínio devem ser acompanhadas da atualização das URLs permitidas nos provedores.
 

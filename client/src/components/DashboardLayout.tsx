@@ -123,7 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setAuthNotice(null);
   };
 
-  const startSocialLogin = (provider: "google" | "github") => {
+  const startSocialLogin = (provider: "github") => {
     window.location.href = `/api/auth/${provider}`;
   };
 
@@ -179,11 +179,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <p className="mt-4 text-sm leading-6 text-[#91ada0]">{description}</p>
 
           {authMode === "login" && <>
-            <div className="mt-7 grid grid-cols-2 gap-2">
-              <Button type="button" variant="outline" onClick={() => startSocialLogin("google")} className="h-11 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><span className="mr-2 grid h-5 w-5 place-items-center rounded bg-white font-bold text-[#4285f4]">G</span>Google</Button>
-              <Button type="button" variant="outline" onClick={() => startSocialLogin("github")} className="h-11 border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><Github className="mr-2 h-4 w-4" />GitHub</Button>
+            <div className="mt-7">
+              <Button type="button" variant="outline" onClick={() => startSocialLogin("github")} className="h-11 w-full border-[#31584e] bg-transparent text-xs text-[#abd398] hover:bg-[#183b38] hover:text-[#c8ff4f]"><Github className="mr-2 h-4 w-4" />Continuar com GitHub</Button>
             </div>
-            <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#55776d]"><div className="h-px flex-1 bg-[#24483f]" />ou entre com e-mail<div className="h-px flex-1 bg-[#24483f]" /></div>
+            <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#55776d]"><div className="h-px flex-1 bg-[#24483f]" />ou use seu e-mail<div className="h-px flex-1 bg-[#24483f]" /></div>
           </>}
 
           <form onSubmit={submitAuth} className="space-y-3">

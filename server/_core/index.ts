@@ -13,7 +13,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
-const SOCIAL_PROVIDERS: SocialProvider[] = ["google", "github"];
+const SOCIAL_PROVIDERS: SocialProvider[] = ["github"];
 
 function registerSocialAuthRoutes(app: express.Express) {
   for (const provider of SOCIAL_PROVIDERS) {
