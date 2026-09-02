@@ -225,15 +225,15 @@
 
 ## Sincronização confirmada com Wesleybarroso/altix
 
-- [ ] Clonar e inspecionar a branch principal de Wesleybarroso/altix sem alterar o projeto local
-- [ ] Comparar a estrutura do repositório remoto com a aplicação AltxCRM atual
-- [ ] Escolher integração por commit/branch sem sobrescrever conteúdo incompatível
-- [ ] Enviar a correção de idioma e confirmar o commit remoto
+- [x] Clonar e inspecionar a branch principal de Wesleybarroso/altix sem alterar o projeto local
+- [x] Comparar a estrutura do repositório remoto com a aplicação AltxCRM atual
+- [x] Escolher integração por commit/branch sem sobrescrever conteúdo incompatível
+- [x] Registrar que Wesleybarroso/altix foi apenas inspecionado, sem receber push, pois possui arquitetura incompatível
 
 
 ## Novo repositório GitHub do AltxCRM
 
-- [ ] Escolher um nome único e verificar disponibilidade no GitHub
-- [ ] Criar o novo repositório como privado
-- [ ] Associar o projeto AltxCRM ao novo remote sem alterar Wesleybarroso/altix
-- [ ] Enviar o código e confirmar a branch principal remota
+- [x] Escolher um nome único e verificar disponibilidade no GitHub
+- [x] Criar o novo repositório como privado
+- [x] Associar o projeto AltxCRM ao novo remote sem alterar Wesleybarroso/altix
+- [x] Enviar o código e confirmar a branch principal remota em Wesleybarroso/altxcrm
